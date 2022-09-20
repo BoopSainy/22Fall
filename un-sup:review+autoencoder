@@ -1,0 +1,31 @@
+review the probability theory:
+
+x: 成功夺冠
+y: 训练期天天睡觉；训练期天天训练
+
+prior probability of x: p(x)
+conditional probability of x: p(x|y = 训练期天天训练)
+posterior probability of x: p(y|x)
+
+
+review of the information and entropy:
+if X represents the even for which country will win 2026 world cup; and this special world cup will only have China, US, and
+France
+
+p(X=China): 1/100;
+p(X=US):29/100;
+p(X=France):70/100;
+
+如果别人给你一个信息：法国队夺冠了，你不会觉得惊讶，因为法国队夺冠的prior概率很高，所以这一个信息不够爆炸，你会觉得信息量很低
+但是如果告诉你：中国队夺冠了，你会觉得非常震惊，因为中国队夺冠的prior概率很低，所以这个信息很劲爆，你会觉得信息量十足
+
+那么这个信息量的量化公式就是 -log2(p(X));这件事情的先验概率越高，越接近于1，那么它最终的信息量就会变成0；反而如果这件事的先验概率很低，
+那么最终它发生后的信息量就会很高；
+
+如果说，信息量是用来衡量这个事件最终结果的劲爆程度，那么我们还有一个定义，信息熵
+
+对于这么一个，可能会有多种结果的事件X，在它具体结果出现之前，我们可以根据它各种情况的先验概率得到这个事件最终信息量的期望值，这个期望值
+就是信息熵；如果这个事件的各种结果的概率分布非常单一，类似于0.97，0.02，0.01，那么信息量期望值就会低，信息熵也会低；信息熵高会说明信息量的期望值高，也就是说这个事件
+没有一个结果它的发生先验概率明显高于其他结果，可能各结果发生的先验概率分布接近，类似于 0.28，0.32，0.40
+
+entropy: sum( p(x)*-log2(p(x)) )
