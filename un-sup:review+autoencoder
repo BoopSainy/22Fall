@@ -29,3 +29,15 @@ p(X=France):70/100;
 没有一个结果它的发生先验概率明显高于其他结果，可能各结果发生的先验概率分布接近，类似于 0.28，0.32，0.40
 
 entropy: sum( p(x)*-log2(p(x)) )
+
+
+pca
+
+suppose you are training your algorithm on images. then the input will be somewhat redundant, because the values
+of adjacent pixels in an image are highly correlated. concretely, suppose we are training on 16x16 grayscale image
+patches. then x <- r^256 are 256 dimensional vectors, with one feature xj corresponding to the
+
+pca是对样本们的特征维度进行操作的：假设我们现在有300张图片，每张图是10x10像素点，也就是说，现在我们有300个样本，每个样本由100个特征值来表示；
+那么这个时候我们样本 X:300x100；每个样本xi会有100个特征；
+对于一号特征f1，我们现在有300个这样的值，然后如果我们单看这一个特征，就好比是这300个样本散落在一个100维的空间里，然后每个样本在向量基base_1
+上的投影值，就是f1的值们，但是之所以我们想要降维度：是因为维度
