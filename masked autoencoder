@@ -1,0 +1,60 @@
+masked autoencoders are scalable vision learners
+
+this paper shows that masked autoencoders (mae) are scalable self-supervised learners
+for computer vision. our mae approach is simple: we mask random patches of the input
+image and reconstruct the missing pixels. it is based on two core designs. first, we
+develop an asymmetric encoder-decoder architecture, with an encoder that operates only
+on the visible subset of patches (without mask tokens), along with a lightweight decoder
+that reconstructs the original image from the latent representation and mask tokens
+
+second, we find that masking a high proportion of the input image, e.g., 75%, yields a 
+nontrivial and meaningful self-supervisory task.
+
+～
+利用学习到的隐藏层向量再进行聚类等任务时将更加的简单高效。对于如何学习隐藏层向量的研究，可以称之为表征学习。
+但是这种简单的编码-解码结构仍然存在很多问题，
+
+这个作者把机器学习简单分为：监督学习，无监督学习，半监督学习，和强化学习；
+无监督学习不依赖任何标签，通过对数据内在特征的挖掘，找到样本间的关系，比如聚类相关的任务；
+
+无监督学习中被广泛采用的方式是autoencoder; 我们已经了解了基本的undercomplete; overcomplete; 
+sparse; denoising; stacked autoencoder;
+
+对于自编码器，我们的目的并不是简单的降维，而是希望它能够理解输入的是什么，让它总结出可以抽象表达输入数据的
+latent features;
+
+
+
+自监督学习：我的理解是，目前我们有一个large scale图像数据集，但是没有label，我们的目的也并不是一步登天直接
+实现最终label的预测；我们当前的目的只不过是希望先训练一个模型，这个模型它可以用来从图像中有效地提取一些语义
+特征，这个pretrained模型后面只需要fine-tuned就可以用于后续的下游任务；
+
+这里我们训练这个模型的时候，因为没有label，所以我们需要自己来创建一些“任务”，这些任务可以当作是监督信号；
+
+比如其实我认为 autoencoder有点属于自监督学习的意思，它本来没有Label，强行给自己添加了一个用bottleneck
+进行“图像重构”的任务，从而预训练出了encoder和decoder，其中encoder就可以用于提取语义特征
+
+除了“图像重构”这个任务，人们还想出了各种各样的任务，比如：
+
+我认为比较有意思的几个：（1）将一张图等分为9块，每一块都有自己的index，然后对这9块肆意排序
+123456789 132456879... 每一种排序方式都对应着一类排序方式，这时候就构建了一个“对打乱顺序的patches进行64
+分类”的任务，模型想要完成这个任务，就需要理解每个patch的含义已经整个图的含义
+
+（2）将输入图片挖去一部分，比如等分9块，随机maksed一块，feed的是masked image，target是masked patch
+
+（3）将输入图像灰度化，然后 feed image in grayscale, target是original colored image
+这种基于预测颜色的生成模型给了人们新的启发，其实这种灰度图和ab域的信息我们可以当作是一种图片的解耦表达，
+
+（4）甚至还有很朴素的，它只是对输入图像进行数据增广，比如将一张图像旋转至不同角度, feed the rotated image
+to a convNet, and the target is the rotation degree.
+
+自监督学习在 预训练模型 中的成功让研究人员觉得非常兴奋，同时也激发了更多的灵感。我们之前介绍的模型都是在专注
+如何寻找自监督信号，而自监督学习一定要脱离下游的具体任务吗？答案是否定的，越来越多的工作开始思考自监督学习
+和具体任务紧密结合的方法 (task related self-supervised learning)
+～
+
+有时间了再细看mae；
+
+
+
+
