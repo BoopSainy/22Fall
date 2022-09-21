@@ -55,7 +55,38 @@ X = 100 x 300; X^T = 300 x 100; 它们的矩阵相称 XX^T = 100 x 100; 这个�
 
 
 sparse autoencoder;
+相比于undercomplete autoencoder, sparse ae拥有更复杂的网络结构; 如果说undercomplete ae是想要通过少量的hidden 
+nodes去找到合适的latent features to abstractly represent input data; 那么sparse ae则是希望通过loss
+function来限制每个样本可以使用的hidden node数量，也就是让一些node不被activated;
 
+为此设计了两种不同的loss function;
+
+第一种是加一个L1 term, 只不过这一次的term不是去约束weights的大小,而是 lambda*sum_i(|a(x_i)|_1)
+
+
+第二个是:
+rou_hat_j = avg( sum_i( a_j( x_i ) ) ); 它包含了一个batch里所有input在j_th node处的激活的平均值;
+我们是想要把这个值近似成一个j_th node 激活/不激活的一个二项分布, rou_hat_j 就是激活的概率;
+
+同时我们给所有hidden nodes设定好一个rou; 这个是理想的,目标的hidden nodes们激活/不激活的二项分布
+
+我们希望用j个KL conv去衡量每个node的分布是否足够接近我们的理想分布rou, 如果接近, 那么KL conv自然就会很小, 
+loss function也会变小;
+
+
+This loss term is visualized below for an ideal distribution of rou = 0.2, corresponding with
+the minimum (zero) penalty at this point
+
+
+
+Denoising autoencoder:
+so far we've discussed the concept of training a neural network where the input and 
+outputs are identical and our model is tasked with reproducing the input as closely as
+possible while passing through some sort of information bottleneck. recall thta i mentioned
+we'd like our autoencoder to be sensitive enough 
+
+another approach towards developing a generalizable model is to slightly corrupt the input 
+data but still maintain the uncorrupted data as our target output.
 
 
 
