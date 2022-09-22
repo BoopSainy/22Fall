@@ -38,6 +38,84 @@ we could start with a database of raw images
 因为我们还有reconstruction term,试想如果都重合了，那就无法完成重构任务，那么损失就会很大；所以为了减小损失，损失函数
 会迫使10种图片的latent features分布们不会完全重合到标准正态分布；同时重构损失会
 
+intuitions about the regularization
+the regularity that is expected from the latent space in order to make generative process possible can be expressed 
+
+vae并不是想要通过encoder推理出输入在latent space中的latent feature，而是想要推测出输入的latent feature的概率分布；
+decoder也是拥有很强的general ability，他要学的不是将一个latent feature映射回original input，而是map the latent features 
+within the distribution to original input
+
+continuity (two close points in the latent space should not give two completely different contents once decoded) and
+completeness (for a chosen distribution, a point sampled from the latent space should give "meaningful" content once
+decoded)
+
+the only fact that vaes encode inputs as distributions instead of simple points is not sufficient to ensure
+continuity and completeness. without a well defined regularization term, the model can learn, in order to minimize
+its creconstruction error, to "ignore" the fact that distributions are returned and behave almost like classic 
+autoencoders (leading to overfitting). to do so, the encoder can either return distributions with tiny variances (that 
+would tend to be punctual distributions) or return distributions with very different means (that would then be really
+far apart from each other in the latent space). in both cases, distributions are used the wrong way (cancelling 
+the expected benefit) and continuity or completeness are not satisfied.
+
+如果不施加额外的约束，只是简单的寄希望于将input map to distribution来实现我们的目的，那最终还是不行；因为encoder可以将每个输入样本的
+distribution映射成（以gaussian为例）方差极小的，并且各distribution的平均值相差很远的分布们；这样的其实还是很严重的overfitting；
+我们随意的在latent space中取值，但凡不是取到那些如同针一样的gaussian上，decoder就无法解码出有意义的图，甚至离“针”很近的情况下
+decoder就是不能解码出跟那个”针‘相似的输入。
+
+so, in order to avoid these effects we have to regularize both the covariance matrix and the mean of the distributions
+returned by the encoder; (VAE ENCODER RETURN mean vector AND covariance matrix FOR THE DISTRIBUTION OF LATENT
+FEATURES OF INPUT). in practice, this regularization is done by enforcing distributions to be close to a standard
+normal distribution (centered and reduced). this way, we require the covariance matrices to be close to the identity, 
+preventing punctual distributions, and the mean to be close to 0, preventing encoded distributions to be too far 
+apart from each others.
+
+其中的一个regularization term是要将所有的inputs的latent features的distributions们都约束到一个standard normal distribution上，
+这样以来，大家的means都会向0靠拢，不至于说相差甚远导致各distribution之间出现“空白区域”（decoder理解不了的latent features），另一
+方面，将大家的variance都会向1靠拢，如此一来不会出现说，那种像“针”一样的latent features分布，也就是latent feature distribution
+泛化能力好，这一片都可以被decode to相似的输入；
+
+with this regularization term, we prevent the model to encode data far apart in the latent space and encourage 
+as much as possible returned distributions to "overlap", satisfying this way the expected continuity and completeness
+conditions. naturally, as for any regularization term, this comes at the price of a higher reconstruction error
+on the training data. the tradeoff between the reconstruction error and the KL convergence can however be adjusted
+and we will see the next section how the expression of the balance naturally emerge from our formal derivation.
+
+KL convergence regularization term去约束各latent feature distributions去逼近standard normal distribution会导致重构误差变大，
+所以需要一个tradeoff；
+
+to conclude this subsection, we can observe that continuity and completeness obtained with regularization tend to
+create a "gradient" over the information encoded in the latent space. for example, a point of the latent space that
+would be halfway between the means of two encoded distributions coming from different training data should be decoded
+in something that is somewhere between the data 
+
+总之，distributions们的variance过于小不是一件好事，过于小首先会导致问题1:各Latent feature distributions如同针一样，distribution
+稍微靠外围一点的latent feature就无法被decode to original input；同时如果variance相对于各个分布的means之间的距离来说过于小的话，那么
+各分布就会相隔很远，导致分布之间的点无法有意义地被decode
+
+mathematical details of VAEs
+in the previous section we gave the following intuitive overview: vaes are autoencoders that encode inputs as
+distributions instead of points and whose latent space "organization" is regularized by constraining distributions
+returned by the encoder to be close to a standard Gaussian. in this section, we will give a more mathematical view of
+VAEs that will allow us to justify the regularization term more rigorously. to do so, we will set a clear 
+probabilistic framework and will use, in particular, variational inference technique.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
