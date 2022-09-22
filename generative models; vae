@@ -29,7 +29,14 @@ instead, one often cares about producing more examples that are like those alrea
 我们在乎的是生成更多的样本，这些样本很像数据集中的样本，但又不完全一样, but not exactly the same.
 we could start with a database of raw images
 
-
+给模型一个输入，这个encoder此时负责的是根据这个输入得到mean和covariance for 一个高维高斯分布，这个高维高斯分布
+的具体维度就是latent space的维度，p(z|x)的意思是，given x，z的概率分布/密度函数。
+接着我从这个高斯分布中随机抽取z，用decoder还原z；
+再结合上我们的loss function分析，这个时候，KL散度项是限制每种类型图片的latent features的分布，假设我们是在mnist
+数据集上做，那么我们就是希望0-9这10种图像的latent features的分布都能够逼近标准正态分布（实际当然不可能），这样的话
+它们就能很紧凑（具体目前没想到有什么好处），但是它们的latent features的分布又不会成为标准正态分布，因为它们不允许重合，
+因为我们还有reconstruction term,试想如果都重合了，那就无法完成重构任务，那么损失就会很大；所以为了减小损失，损失函数
+会迫使10种图片的latent features分布们不会完全重合到标准正态分布；同时重构损失会
 
 
 
