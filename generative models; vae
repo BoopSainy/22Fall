@@ -1,3 +1,8 @@
+reading from "https://towardsdatascience.com/understanding-variational-autoencoders-vaes-f70510919f73"
+and "https://towardsdatascience.com/bayesian-inference-problem-mcmc-and-variational-inference-25a8aa9bce29"
+
+''''
+
 之前我所了解的大多是 discriminative model，对于一个分类任务，这种模型它主要的任务就是在学习一个函数f(x,y) = p(y|x)，也就是
 给定一个输入，我们想要知道它在不同类别下的概率值是多少；
 
@@ -101,6 +106,86 @@ probabilistic framework and will use, in particular, variational inference techn
 
 
 
+
+"""  一些新的关于VAE的体会"""
+
+首先是VAE的encoder is not deterministic, it is not used to map input image to a single point 
+in latent space; but find the necessary parameters for probability distribution p(z|x);
+here we need an assumption for p(z|x), if we assume it is a Gaussian distribution, then, encoder
+is responsible for finding the mean and covariance;
+
+the second assumption is, we assume all p(z|x) should be close to a prior distribution for p(z);
+for example, here we will assume p(z) is a standard normal distribution N(0, I);
+
+Then another assumption is, based on initialized weights for decoder, the decoder could be a 
+function for z - f(z); we assume p(x|z) = N(f(z), cI) where f(z) and cI are initialized;
+
+so now, we know p(z), p(x|z), based on bayesian theory, we could compute p(z|x) = p(x|z)p(z)/p(x);
+where p(x) = sum_z[p(x|z)p(z)] and p(x) should be a constant because we have fixed p(z) and 
+p(x|z) by assumption and initialization; however, it will be computationally complicated to 
+compute p(x), just say if we have a z in 100-dimensional, it will be a summation for 2^100 for
+a single p(x_i). therefore, if we want to get p(z|x), we need some methods to avoid computing
+p(x);
+
+therefore, people choose to use variational inference method to approximate p(z|x);
+1. 我们需要假设一个概率分布函数的family,这个family的概率分布基础函数是假设好的,比如我们假设它是一个高斯函数,
+那么这个family是由无数个高斯概率分布函数组成的，他们的mean和variance要根据encoder的weights来决定；
+我们的目的就是从这个family中找到最好的那个so that 它和我们的目标概率分布函数p(z|x) = Cp(x|z)p(z)最相似；
+
+这里有的人会使用mean field family, 它的意思就是，这个family里的每个成员函数都符合以下特性：
+f(z) = multiply_j[f_j(z_j)], 就是说对于我们的高维度latent feature vector, lets say 100-d，
+这个100-d vector的概率分布函数可以拆分为 每一维单独有一个自己的1-d gaussian, 自己的scalar mean and 
+variance value, 然后100个1-d gaussian的积，是最终的f(z);
+我感觉这里这样做，是为了方便使用神经网络，这样的话如果我们想要输入图片的latent features是在一个100-d latent
+space，我们可以设置encoder的输出是200 nodes, 100 scalar means and 100 scalar variances for 100
+1-d gaussian of each element within 100-d latent feature vector；
+
+
+""" mathematic stuffs behind vae;
+let's begin by defining a probabilistic graphical model to describe our data,
+we denote by x the variable that represents our data and assume that x is generated from
+a latent variable z (the encoded representation) that is not directly observed. thus for each
+data point, the following two steps generative process is assumed:
+
+first a latent representation z is sampled from the prior distribution p(z);
+second the data x is sampled from the conditional likelihood distribution p(x|z);
+
+contrary to a simple autoencoder that consider deterministic encoder and decoder, we are 
+going to consider now probabilistic versions of these two objects. 
+
+here we are going to approximate p(z|x) by a gaussian distribution q_x(z) whose mean and 
+convariance are defined by two functions, g and h, of the parameter x.
+
+we assume the function f in decoder known and fixed, under this assumptions, we could 
+approximate the posterior p(z|x) using variational inference technique. however,
+in practice, this function f that defines the decoder is not known and also need to be 
+chosen. to do so, let's remind that our initial goal is to find a performant encoding-decoding
+scheme whose latent space is regular enough to be used for generative purpose. if the regularity
+is mostly ruled by the prior distribution assumed over the latent space, the performance of
+the overall encoding-decoding scheme highly depends on the choice of the function f.
+
+main takeaways:
+1. dimensionality reduction is the process of reducing the number of features that describe
+some data (either by selecting only a subset of the initial features or by combining them
+into a reduced number new features) and so, can be seen as an encoding process.
+
+2. autoencoders are neural networks architectures composed of both an encoder and a decoder 
+that create a bottleneck to go through for data and that are trained to lose a minimal quantity
+of information during the encoding-decoding process (training by gradient descent iterations
+with the goal to reduce the reconstruction error)
+
+3. due to overfitting, the latent space of an autoencoder can be extremely irregular (close 
+points in latent space can give very different decoded data, some point of the latent space can
+give meaningless content once decoded, ...) and, so, we cant really define a generative process
+that simply consists of sampling a point from the latent space and make it go through the 
+decoder to get a new data.
+
+4. variational autoencoder (VAEs) are autoencoders that tackle the problem of the latent 
+space irregularity by making the encoder return a distribution over the latent space instead 
+of a single point and by adding in the loss function a regularization term over that returned 
+distribution in order to ensure a better organization of the latent space
+
+5.
 
 
 
