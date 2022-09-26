@@ -85,9 +85,60 @@ with iterative algorithms such as the expectation-maximization algorithm, in whi
 the labeled and unlabeled data are jointly used to maximize the likelihood of the
 model.
 
-1.2 SSL Methods
+1.2 SSL Methods {说是方法，但是感觉更像是在描述一些要求}
 There have been many SSL methods and approaches that have been introduced over the
 years. These algorithms can be broadly divided into the following categories:
+
+(1) consistency regularization (aka consistency training): Based on the assumption
+that if a realistic perturbation was applied to the unlabeled data points, the 
+prediction should not change significantly. The model can then be trained to have 
+a consistent prediction on a given unlabeled example and its perturbed version.
+{一致性约束：所得到的SSL模型在预测一个unlabeled样本时候，如果该unlabeled样本被施加了一些
+perturbation，那么模型不该得到一个与之前相差很远的预测结果}
+
+(2) proxy-label methods: Such methods leverage a trained model on the labeled set
+to produce additional training examples by labeling instances of the unlabeled set
+based on some heuristics. These approaches can also be referred to as bootstrapping
+algorithms. We follow Ruder et al. and refer to them as proxy-label methods. Some
+examples of such methods are Self-training, Co-training, and Multi-View Learning.{
+代理标签方法：它是一种先用已有的labeled样本去简单地监督训练一个model_1，之后iteratively使用
+一些方法去给一部分unlabeled样本贴标签，使这部分unlabeled样本成为补充的labeled training data，
+最后再用扩大的training dataset去训练一个新的model}
+
+(3) Generative models: Similar to the supervised setting, where the learned features
+on one task can be transferred to other downstream tasks.
+
+(4) Graph-Based methods: 现在不会
+
+In addition to these main categories, there is also some SSL work on entropy 
+minimization, where we force the model to make confident predictions by minimizing
+the entropy of the predictions. Consistency training also be considered a 
+proxy-label method, with a subtle difference, instead of considering the predictions
+as...
+
+Transductive learning aims to apply the trained classifier on the unlabeled instances
+observed at training time;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
