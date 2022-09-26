@@ -1,0 +1,98 @@
+semi-supervised learning uses both labeled and unlabeled data to train a model.
+
+interestingly, most existing literature on semi-supervised learning focuses on
+vision tasks;
+
+from "https://arxiv.org/pdf/2006.05278.pdf"
+
+deep neural networks demonstrated their ability to provide remarkable performances
+on a wide range of supervised learning tasks (e.g., image classification) when 
+trained on extensive collections of labeled data (e.g., ImageNet). However, creating
+such large datasets requires a considerable amount of resources, time, and effort.
+Such resources may not be available in many practical cases, limiting the adoption
+and the application of many deep learning methods. In a search for more 
+data-efficient deep learning methods to overcome the need for large annotated 
+datasets, there is a rising research interest in semi-supervised learning and its
+applications to deep neural networks to reduce the amount of labeled data required,
+by either developing novel methods or adopting existing semi-supervised learning 
+frameworks for a deep learning setting. in this paper, we provide a comprehensive
+overview of deep semi-supervised learning, starting with an introduction to the field,
+followed by a summarization of the dominant semi-supervised approaches in deep 
+learning.
+
+introduction:
+In recent years, semi-supervised learning (SSL) has emerged as an exciting new 
+research direction in deep learning. Such methods deal with the situation where few
+labeled training examples are available together with a significant number of 
+unlabeled samples. In such a setting, SSL methods are more applicable to real-world
+applications where the unlabeled data are readily available and easy to acquire,
+while labeled instances are often hard, expensive, and time-consuming to collect.
+SSL is capable of building better classifiers that compensate for the lack of labeled
+training data. {半监督学习适用于的场景：由于labeling的成本太高，只有少量labeled数据，
+但是却有海量unlabeled数据。} However, in order to avoid a lousy matching of the problem
+structure with model assumption, which can lead to a degradation in classification
+performance, SSL is only effective under certain assumptions, such as assuming
+that the decision boundary should avoid regions with high density, facilitating the
+extraction of additional information from the unlabeled instances to regularize
+training. {半监督学习的生效前提：建立在一系列的假设基础上，比如在半监督学习的分类问题上，
+我们假设半监督学习所找到的decision boundary要远离样本点密集区域。我们会通过增加新的
+regularization term去施加这些假设} In this paper, we will start by an introduction to
+SSL with its main assumptions and methods, followed by a summarization of the 
+dominant semi-supervised approaches in deep learning. For a detailed and comprehensive
+review of the field, Semi-Supervised Learning Book is a good resource.
+
+1.1 Semi-supervised learning
+"semi-supervised learning (SSL) is halfway between supervised and unsupervised 
+learning. In addition to unlabeled data, the algorithm is provided with some 
+supervision information - but not necessarily for all examples. Often, this 
+information will be the targets associated with some of the examples. In this case,
+the data set X = (x_i); i (- [n] can be divided into two parts: the points 
+X_l := (x_1, x_2, ..., x_l), for which labels Y_l := (y_1, y_2, ..., y_l) are 
+provided, and the points X_u := (x_l+1, x_l+2, ..., x_l+u), the labels of which 
+are not known." - Chapelle et al.
+
+As stated in the definition above, in SSL, we are provided with a dataset containing
+both labeled and unlabeled examples. The portion of labeled examples is usually quite
+small compared to the unlabeled example (e.g., 1 to 10% of the total number of 
+examples). So with a dataset D containing a labeled subset D_l and an unlabeled
+subset D_u, the objective, or rather hope, is to leverage the unlabeled examples
+to train a better performing model than what can be obtained using only the labeled
+portion. {这里说了很多，但是就表达了一个意思，就是我们现在的数据集将由两部分样本组成，一部分是
+有标签的样本，这部分通常只占到总量的10%以内，剩下的大部分都是unlabeled样本。
+另一方面，SSL的目的/希望是：能够利用起来unlabeled样本去训练一个SSL模型，这个模型的表现要优于
+只用那少部分labeled样本做监督学习所得到的模型。} And hopefully, get closer to the desired
+optimal performance, in which all of the dataset D is labeled. {这里又补充了一下目的：
+希望SSL能够更进一步，去得到一个模型，它的效果近似于数据集里的样本都labeled，然后再监督学习
+得到的模型}
+
+More formally, the goal of SSL is to leverage the unlabeled data D_u to produce a 
+prediction function f_theta with trainable parameters theta, that is more accurate
+than what would have been obtained by only using the labeled data D_l. For instance,
+D_u might provide us with additional information about the structure of the data
+distribution p(x) to better estimate the decision boundary between the different 
+classes. {unlabeled数据也许能给我们提供额外的有用信息，比如说我们可以得到一个更加详细的
+样本的分布情况，进而能estimate出一个更加精确的decision boundary} For example, as shown in 
+fig.1, where the data points with distinct labels are separated with a low-density
+region, leveraging unlabeled data with a SSL approach can provide us with additional
+information about the shape of the decision boundary between two classes, and reduce 
+the ambiguity present in the supervised case.
+
+SSL first appeared in the form of self-training, which is also known as self-labeling
+or self-teaching. A model is first trained on labeled data. Then, iteratively, a
+portion of the unlabeled data is annotated using the trained model and added to the
+training set for the next iteration. SSL took off in the 1970s after its success
+with iterative algorithms such as the expectation-maximization algorithm, in which
+the labeled and unlabeled data are jointly used to maximize the likelihood of the
+model.
+
+1.2 SSL Methods
+There have been many SSL methods and approaches that have been introduced over the
+years. These algorithms can be broadly divided into the following categories:
+
+
+
+
+
+
+
+
