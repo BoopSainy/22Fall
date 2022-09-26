@@ -120,6 +120,70 @@ Transductive learning aims to apply the trained classifier on the unlabeled inst
 observed at training time;
 
 
+### MAIN ASSUMPTIONS IN SSL:
+the first question we need to answer is under what assumptions can we apply SSL
+algorithms? SSL algorithms only work under some assumptions about the structure
+of the data need to hold. Without such assumptions, it would not be possible to
+generalize from a finite training set to a set of possibly infinitely many unseen
+test cases. The main assumptions in SSL are:
+{SSL需要一些假设！！！}
+
+The Smoothness Assumption:
+If two points x1, x2 reside in a high-density region are close, then so should be
+their corresponding outputs y1, and y2. Meaning that if two inputs...
+{直接中文，光滑性假设是说，对于一个分类问题，如果说两个样本点x1 x2坐落在同一个高密度区域中
+（也可以理解为坐落在同一个cluster中），那么这两个样本点结果y1 y2(注意，对于分类任务，其实我们是
+希望model帮我们找到p(C|x)，我们想要知道，当给定x = x1时，C = [1, 0, 0, 0, 0]^T,
+C = [0, 1, 0, 0, 0]^T, C = [0, 0, 1, 0, 0]^T ...分别的概率；
+返回值y1将是一个概率分布， y1 = [p(C1|x1), p(C2|x1), p(C3|x1)...])
+
+光滑性假设就是在说，如果样本点x1 x2坐落在同一个高密度区域中，并且距离很近，那么它们的预测值y1,y2
+也要是两个很相近的概率分布向量；反之，如果x1 x2被一个低密度带分割开来，那么它们的预测值y1 y2需要
+是两个距离甚远的概率分布向量}
+
+The Cluster Assumption:
+If points are in the same cluster, they are likely
+
+
+
+- 2 - 
+### Consistency Regularization:
+a recent line of works in deep semi-supervised learning utilizes the unlabeled data
+to enforce the trained model to be in line with the cluster assumption, i.e., the
+learned decision boundary must lie in low-density regions. These methods are based on
+a simple concept that, if a realistic perturbation was to be applied to an unlabeled 
+example, the prediction should not change significantly, given that under the cluster
+assumption, data points with distinct labels are separated with low-density regions, 
+so the likelihood of one example to switch classes after a pertubation is small.
+{分类问题中，希望学习到的decision boundary位于所有样本的low density region，如此一来, predicted
+probability distribution for unlabeled instance with perturbation will not change 
+significantly}
+
+More formally, with consistency regularization, we are favoring functions f_theta that
+give consistent predictions for similar data points. so rather than minimizing the
+classification cost at the zero-dimensional data points of the input space, the 
+regularized model minimizes the cose on a manifold around each data point, pushing the 
+decision boundaries away from the unlabeled data points and smoothing the manifold 
+on which the data resides.... Concretely, given an unlabeled data point x and its
+perturbed version x_hat, the objective is to minimize the distance between the 
+two outputs dis(f_theta(x), f_theta(x_hat)). the popular distance measures dis are
+mean squared error (MSE), Kullback-Leiber divergence (KL) and Jensen-Shannon 
+divergence..
+note that we can also enforce a consistency over two perturbed versions of x, x_hat_1,
+and x_hat_2.
+
+- 2.1 -
+Ladder Networks
+to take any well-performing feed-forward network on supervised data and augment it 
+with additional branches to be able to utilize additional unlabeled data. Rasmus et al.
+propose to use Ladder Networks with an additional encoder and decoder for SSL.
+{感觉分类问题里，就如同是一个，我们已经指定好了latent features是什么的encoder, 比如这个数据集
+一共有五种类型的图片，那么就相当于，我们指定了5个latent features，每一个类别都是一个latent feature，
+然后，Ladder Networks就是除了}
+
+
+
+
 
 
 
