@@ -1,0 +1,11 @@
+source: https://medium.com/towards-data-science/understanding-generative-adversarial-networks-gans-cd6e4651a29
+
+Introduction:
+Yann LeCun described it as "the most interesting idea in the last 10 years in machine learning". of course,
+such a compliment coming from such a prominent researcher in the deep learning area is always a great advertisement
+for the subject wa are talking about! and, indeed, generative adversarial networks (gans for short) have had
+a huge success since they were introduced in 2014 by Ian J. Goodfellow and co-authors in the article...
+
+so what are generative adversarial networks? what makes them so "interesting"? in this post, we will see that
+adversarial training is an enlightening idea, beautiful by its simplicity, that represents a real conceptual progress
+for machine learning and more especially for generative models (in the same way as backpropagation is a simple
