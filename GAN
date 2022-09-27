@@ -9,3 +9,65 @@ a huge success since they were introduced in 2014 by Ian J. Goodfellow and co-au
 so what are generative adversarial networks? what makes them so "interesting"? in this post, we will see that
 adversarial training is an enlightening idea, beautiful by its simplicity, that represents a real conceptual progress
 for machine learning and more especially for generative models (in the same way as backpropagation is a simple
+
+"""
+feels like VAE对于整个数据集的latent features representations上，还没有那么暴力，它还是试图通过autoencoder的形式+一些约束（给latent features
+分布加prior）来寻找能够很好表示数据集特性，给数据集内样本进行特征解耦的latent features distribution；
+但是GAN直接不装了，它感觉像是直接硬性的给数据集的latent features加一个prior distribution，再用神经网络强大的拟合能力调整prior latent features
+distribution和approximated data distribution之间的映射关系
+
+uniform random variables can be pseudo-randomly generated
+computers are fundamentally deterministic. so it is, in theory, impossible to generate numbers that are really random.
+however, it is possible to define algorithms that generate sequence of numbers... in particular, a computer is able, 
+using a pseudorandom number generator, to generate a sequence of numbers that approximatively follows a uniform 
+random distribution between 0 and 1. the uniform 
+
+
+
+
+
+so far we have shown that our problem of generating a new image of dog can be rephrased into a problem of 
+generating a random vector in the N dimensional vector space that follows the "dog probability distribution"
+and we have suggested to use a transform method, with a neural network to model the transform function
+
+GAN的生成器部分的问题是，我们猜测数据集里的图片比如是784pixel，它们是有一个潜在的分布模式在784维空间里的
+我们想要找到一个mapping function,它可以让我们在一个简单的probability distribution（比如uniform
+distribution）里采样，然后这个mapping function可以将简单采样映射成一个784维的向量，并且这个映射而来的新向量
+服从数据集的潜在分布模式；
+
+Now, we still need to train the network to express the right transform function. to this purpose, we can 
+suggest two different training methods: a direct one and an indirect one. the direct training method
+consists of comparing the true and the generated probability distributions and backpropagating the difference
+(the error) throught the network. this is the idea that rules generative matching networks.
+
+
+final and ideal balance points of generator and discriminator is: the generated points have exactly same 
+distribution with the distribution of true points; meanwhile, the discriminator will predict "true" or
+"generated" with probability of 1/2 for all points;
+
+
+math:
+disclaimer: the equations in the following are not the ones of the article of Ian Goodfellow. we propose
+here an other mathematical formalization for two reasons: first, to stay a little bit closer to the 
+intuitions given above and, second, because the equations of the original paper are already so clear that
+it would not have been useful to just rewrite the. Notice also that we absolutely do not enter into
+the practical considerations (vanishing gradient or other) related to the different possible loss functions.
+we highly encourage the readers to also take a look at the equations of the original paper: the main
+difference is that Ian Goodfellow and co-authors have worked with cross-entropy error instead of absolute
+error (as we do bellow). moreover, in the following we assume a generator and a discriminator with unlimited
+capacity
+
+neural networks modelling essentially requires to define two things: an architecture and a loss function.
+we have already described the architecture of generative adversarial networks. it consists of two networks:
+a generator network G(.) that takes a random input z with density p_z and returns an output x_g = G(z) that
+should follow (after traininig) the targeted probability distribution
+a discriminative network D(.) that takes an input x that can be a "true" one (x_t, whose density is 
+denoted p_t) or a "generated" one (x_g, whose density p_g is the density induced by the density p_z
+going through G) and that returns the probability D(x) of x to be a "true" data
+
+lets take now a close look at the "theoretical" loss function of GANs. If we send to the discriminator 
+"true" and "generated" data in the same proportions, the expected absolute error of the discriminator can
+then be expressed as
+
+
+
