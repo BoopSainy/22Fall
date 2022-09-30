@@ -1,0 +1,16 @@
+IoU:
+intersection over union
+we just mentioned that an anchor box "well" surrounds the dog in the image. if the ground-truth bounding box of the object
+of the object is known, how can "well" here be quantified? intuitively, we can measure the similarity between the
+anchor box and the ground-truth bounding box. we know that the jaccard index can meansure the similarity between two sets.
+given sets A and B, their jaccard index is the size of their intersection divided by the sie of their union:
+A \intersection B / A \union B
+in fact, we can consider the pixel area of any bounding box as a set of pixels. in this way, we can measure the similarity
+of the two bounding boxes by the jaccard index of their pixel sets. {把两个bounding boxes当作是两个pixel sets，接着
+jaccard index可以用来衡量两个sets的相似程度，于是使用jaccard index我们可以衡量两个sets的相似率} for two bounding boxes, we usually
+refer their jaccard index as intersection over union (IoU), which is the ratio of their intersection area to their
+union area, as shown in Fig.... The range of an IoU is between 0 to 1. 0means that two bounding boxes do not overlap at all,
+while 1 indicates that the two bounding boxes are equal.
+
+for the remainder of this section, we will use IoU to measure the similarity between anchor boxes and ground-truth bounding
+boxes, and between different anchor boxes.
