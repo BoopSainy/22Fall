@@ -1,0 +1,22 @@
+The procedure to complete geo-localization by cross-view image?
+
+How to use polar transform?
+
+
+To bridge the domain gap, recent works apply a predefined polar transform, on
+the aerial-view images. The transformed aerial images have a similar geometric
+layout as the street-view query images,
+
+{输入将是street-view query images, 将在aerial images database中检索那个“相似度”最高的
+aerial image, 实现geo-localization.}
+ 
+<- CNN method Limitations { cant capture global correlation; cant utilize patches
+position information, which leads to suffer the domain gap between street-view
+and aerial-view}
+
+<- To solve this issue { cnn-based will utilize a polar transform tech which 
+could transform aerial view image to a geometric layout similar to street-view}
+
+which results in significant boost in the retrieval performance. However, the p
+polar transform relies on the prior knowledge of the geometry corresponding to 
+the 
