@@ -71,7 +71,8 @@ consumption, and inference time than cnn-based methods.
 
 
 {DeiT - 1st
-; SAFA - 4th; metric learning loss; polar transform - 3rd; cutmix; ASAM - 2nd; L2LTR - 5th}
+; SAFA - 4th; metric learning loss; polar transform - 3rd; cutmix; ASAM - 2nd; L2LTR - 5th; 
+contrastive learning - pinned}
 
 
 
@@ -150,6 +151,8 @@ localization task, it is not recommended to use data augmentation for regulariza
 dependency, 但是swint又没有global attention operation, 这样相距很远的objects之间的correlation could not 
 be considered, 所以我想在swint最开始加一层global attention operation, 并在中间periodically加上global attention
 operation，我猜测hybrid global and local attention operation could improve model;
+
+loss function and training method utilize contents of contrastive learning;
 }
 
 
@@ -163,3 +166,6 @@ large portion of patches while maintaining retrieval performance.
 finally, we introduce the regularization technique (ASAM) in sec 3.4
 
 3.1 problem statement and method overview;
+given a set of query stree-view images {I_s} and aerial-view reference images {I_a}, our objective is to learn an
+embedding space in which each street-view query I_s is close to its corresponding ground-truth aerial image I_a.
+Each street-view image and its ground-truth aerial image are considered as a positive pair 
