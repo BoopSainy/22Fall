@@ -1,0 +1,55 @@
+{ for TransGeo, for adv-dl's CPC, SimCLR, MoCo}
+
+contrastive learning is a technique that enhances the performance of vision tasks by using the
+principle of contrasting smaples against each other to learn attributes that are common between
+data classes and 
+
+the basic contrastive learning framework consist of selecting a data sample called "anchor", a data
+point belonging to the same distribution as the anchor, called the "positive" sample, 
+
+{现在的pretext task是，我只知道哪些图片属于一类，哪些不属于一类，然后我让network去作为一个encoder，
+我希望这个encoder可以得到每张图片的latent embedding feature vector in latent space so as to
+属于同一类型的图片将有相近的latent feature，不同类型的negative pair的latent features将相距甚远}
+
+The contrastive learning model tries to minimize the distance between the anchor and positive samples,
+i.e., the samples belonging to the same distribution, in the latent space, and at the same time
+maximize the distance between anchor and the negative samples.
+
+tutorial里面only use one embedding network; as shown in the example above, two images belonging to the
+same class lie close to each other in the embedding space ("d+"), and those belonging to different 
+classes lie at a greater distance from each other ("d-"). thus, a contrastive learning model (deontes by
+"theta" in the example above) tries to minimize the distance "d+" and maximize the distance "d-".
+
+several techniques exist to select the positive and negative with respect to anchor, which we will
+discuss next.
+
+1. instance discrimination method:
+in this class of contrastive learning, the entirety of images are made to undergo transformations and
+此法中，比如我选了一张狗的图像作为anchor，这个时候我可以对这张anchor图进行data augmentation，比如mirror the image,
+or convert it to grayscale，将这些图片作为positive sample.
+the negative sample can be any other image in the dataset.
+
+the image below shows the basic framework of the instance discrimination-based contrastive learning 
+technique. the distance function can be anything, from euclidean distance to consine distances in 
+the embedding space.
+
+some image augmentation methods popularly used, for instance 
+discrimination-based contrastive learning, is listed as follows:
+(1) color jittering: here, the brightness, contrast, and saturation of an rgb image are changed randomly.
+this technique is helpful to ensure a model is not memorizing a given object by the scene's colors....
+help model recognize the edge, shape of object; but the transformed colors are odd sometimes
+
+(2) image rotation: an image is rotated randomly within 0-90 degrees. since rotating an image doesn't
+change the core information contained in it (i.e., a dog in an image will still be a dog), models 
+are trained to be rotation invariant for robust prediction
+
+(3) image flipping: the image is flipped (mirrored) about its center, either vertically or horizontally. this is an 
+extension of the concept of image rotation-based augmentation.
+
+(4) image noising: random noise is added to the images pixel-wise. this technique allows the model to learn how
+to separate the signal from the noise in the image and makes it more robust to changes in the image during 
+the test time. for example, randomly changing some pixels in the image to white or black is known as salt-and-pepper
+noise (an example is shown below)
+
+5 random affine: affine is a geometric transformation that preserves lines and parallelism, but not necessarily 
+the distances and angles.
