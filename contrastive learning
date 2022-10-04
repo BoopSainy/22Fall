@@ -51,5 +51,59 @@ to separate the signal from the noise in the image and makes it more robust to c
 the test time. for example, randomly changing some pixels in the image to white or black is known as salt-and-pepper
 noise (an example is shown below)
 
-5 random affine: affine is a geometric transformation that preserves lines and parallelism, but not necessarily 
+(5) random affine: affine is a geometric transformation that preserves lines and parallelism, but not necessarily 
 the distances and angles.
+
+The image above shows some examples of the image augmentations described in this section.
+
+
+2. Image Subsampling/Patching Method
+
+this class of contrastive learning methods breaks a single image into multiple patches of a fixed dimension (say, 
+10x10 patch windows). there might be some degree of overlap between the patches.
+
+now, suppose we take the image of a cat and use one of its patches as the anchor while leveraging the rest as the 
+positive samples. patches from other images (say, one patch each of a reccoon, an owl, and a giraffe) are used as
+negative samples.
+
+
+
+----
+
+contrastive learning: objectives;
+
+a number of loss functions have been defined in the contrastive learning literature for applications in different 
+problems, each with its own set of functionalities. let us discuss some of these in this section.
+
+1. max margin contrastive loss:
+it's one of the oldest loss functions proposed in the Contrastive learning literature
+
+the basic idea here is that the loss function maximizes the distance between samples if they do not belong to
+the same distribution and instead minimizes the distance between them if they belong to the same distribution. it
+is mathematically represented as follows:
+
+L_max_margin_constrative(s_i, s_j, theta) = 1[y_i = y_j] ||theta(s_i) - theta(s_j)||^2 + 1[y_i != y_j] max(0, 
+
+given a list of input samples {x_i}, each has a corresponding label y_i belonging to
+
+
+2. triplet loss:
+the triplet loss (proposed in this paper) is a lot similar to the contrastive loss, both of which try to minimize
+the distance between similar distributions and maximize the distance between unlike distributions. the primary
+difference in the triplet loss is that a positive and a negative are simultaneously taken as input with the 
+anchor sample to compute the loss. mathematically it is represented as follows:
+
+L_triplet(s_a, s_+, s_-, theta) = sum_{} 
+
+!!! for the success of models that use the triplet loss function, it is crucial that the negative samples are
+difficult to separate from the positive samples.!!!
+for example, raccoons and ringtails look a lot similar. both have striped, bushy tails and similar body fur colors.
+when sampling the negative samples against raccoons, choosing ringtails will enable the model to differentiate
+between classes more effectively, than say, when choosing an elephant as the negative smaple.
+
+3. N-pair loss:
+the n-pair loss is an extension of the triplet loss function. instead of smapling a single negative sample, a "N"
+number of negative samples are sampled along with one anchor and one positive sample.
+
+seems like using cosine similarity to measure the distance but not euclidean distance
+
