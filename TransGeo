@@ -2,6 +2,9 @@ The procedure to complete geo-localization by cross-view image?
 
 How to use polar transform?
 
+DeiT
+
+###
 
 To bridge the domain gap, recent works apply a predefined polar transform, on
 the aerial-view images. The transformed aerial images have a similar geometric
@@ -20,3 +23,143 @@ could transform aerial view image to a geometric layout similar to street-view}
 which results in significant boost in the retrieval performance. However, the p
 polar transform relies on the prior knowledge of the geometry corresponding to 
 the 
+
+however, vanilla vision transformer vit has some limitation on training data size and memory consumption,
+which must be addressed when applied to cross-view geo-localization. {传统VIT需要很大的训练集}
+The original vit requires extremely large training datasets to achieve state-of-the-art, e.g. JFT-300M or
+ImageNet-21K (a super set of the original ImageNet-1K). It does not generalize well if trained on medium-
+scale datasets, because it does not have inductive biases inherent in CNNs, e.h. shift-invariance and
+locality. {ViT虽然能够consider long-dependency, but it does not have locality, and treat all patches have
+the same patch sizes; in nlp task, each patch has the same and fixed embedding dimensions because the
+basic elements in nlp are tokens, but in cv, the basic objects in image could have various scales, we 
+should };
+recently, deit applies strong data augmentation, knowledge distillation, and regularization techniques,
+in order to outperform cnn on imagenet-1l, with similar parameters and inference throughput. however, 
+mixup techniques used in deit (e.g. cutmix) are not straight forward for metric learning losses
+
+{
+metric learning losses;
+cutmix;
+adaptive sharpness-aware minimization (ASAM)
+}
+
+in this paper, we propose the first pure transformer-based method for cross-view geo-localization (transgeo).
+to make our method more flexible without relying on data augmentations, we incorporate Adaptive Sharpness-
+Aware Minimization (ASAM), which aovids overfitting to local minima by
+
+{用ASAM， 不想依赖DATA AUGMENTATION, 不想的一个原因是因为，data augmentation 与 metric learning losses不搭?}
+
+moreover, by analyzing the attention map of top transformer encoder, we observe that most of the occluded
+regions in aerial images have negligible contribution to the output. this motivates us to introduce
+the attention-guided non-uniform cropping, which first attends to informative image regions based on 
+attention map of transformer encoder, then increases the resolution only on the selected regions,
+resulting in an "attend and zoom-in" procedure, similar to human vision. our method achieves state-of-the
+art performance with significant less computation cost (GFLOPs) than cnn-based mothd, e.g. SAFA
+
+{SAFA是什么}
+
+we summarize our contributions as follows:
+the first pure transformer-based method (transgeo) for cross-view image geo-localization, without
+relying on polar transform or data augmentation.
+a novel attention-guided non-uniform cropping strategy that removes a large number of uninformative
+patches in reference aerial images to reduce computation with negligible performance drop. the 
+performance is further improved by reallocating the saved computation to higher image resolution of
+the informative regions.
+state-of-the-art performance on both urban and rural datasets with less computation cost, gpu memory
+consumption, and inference time than cnn-based methods.
+
+
+
+{DeiT - 1st
+; SAFA - 4th; metric learning loss; polar transform - 3rd; cutmix; ASAM - 2nd; L2LTR - 5th}
+
+
+
+
+
+2. related work:
+cross-view geo-localization: existing works for cross-view geo localization generally adopt a two-stream
+cnn framework to extract different features for two views, {传统工作是用 2工作流CNN去分别提取 street-view 
+image 和 aerial-view image的features} then learn an embedding space where images from the same GPS 
+location are close to each other. 
+however, they fail to model the significant appearance gap between two views, resulting in poor 
+retrieval performance. recent methods either leverage polar transform or add additional generative 
+model (GAN) to recude domain gap by transforming images from one view to the other. SAFA designs a 
+polar transform based on the geometric prior knowledge of the two views, so that the transformed 
+aerial images have similar layouts as street-view images. Toker et al further train a generative network
+on the top of polar transform, so that the generated images are more realistic for matching. however,
+they highly rely on the geometric correspondence of two views.
+
+on the other hand, several works start to consider practical senarios where the street-view and aerial-view
+images are not perfectly aligned in terms of orientation and spatial location. 
+
+VIGOR proposes a new urban dataset assuming that the query can occur at arbitrary locations in a given 
+area, so the street-view image is not spatially aligned at the center of aerial image. in such case, 
+polar transform may fail to model the cross-view correspondence, due to unknown spatial shift and
+strong occlusion. we show that vision transformer can tackle this challenging scenario with learnable
+position embedding on each input patch.
+
+{过去的两种流派是，1. 使用polar transform, transform aerial-view image to street-view, 但是
+这种转换需要street-view image located in the center of the aerial-view image; }
+
+we notice that l2ltr adopts vanilla vit on the top of resnet
+
+{
+safa: cnn + polar transform;
+l2ltr: early resnet + later vanilla vit; 
+}
+
+resulting in a hybrid cnn+transformer approach. since it adopts cnn as feature extractor, the self-
+attention and position embedding are only used on the high-level cnn features, which does not fully 
+exploit the global modeling ability and position information from the first layer. besides, as noted
+in their paper, it requires significantly larger gpu memory and pre-training dataset than cnn-based 
+methods, while our approach enjoys gpu memory efficiency and uses the same pre-training dataset as
+cnn-based methods, e.h. SAFA. we compare with their method in Sec 4.3. More comparisons are also 
+included in supplementary materials.
+
+vision transformer: transformer is originally proposed for large-scale pre-training in nlp. it is 
+firstly introduced for vision tasks in ViT as vision transformer. ViT divides each input image into 
+kxk samll patches, then considers each patch as one token along with position embedding and feeds them
+into multiple transformer encoders. it requires extremely large training datasets to outperform cnn 
+counterparts with similar parameters, as it does not have inductive biases inherent in cnns.
+DeiT is recently proposed for data-efficient training of vision transformer. it outperforms cnn
+counterparts on medium-scale datasets, i.e. imagenet, by strong data augmentation and regularization
+techniques. a very recent work further reduces the augmentations to only inception-style augmentations.
+{vit有缺陷，deit通过data augmentation等手段增加了regularization弥补了vit的缺陷，但是大多数data augmentation
+都不适用于cross-view geo-localization任务，比如randomly crop会严重影响images from two views的spatial 
+alignment}
+
+{感觉这个任务不适合通过data augmentation来regularize训练，图片里信息本来就不够多，}所以: we aim to design a 
+generic framework for cross-view geo-localization without any augmentation, thus introduce a strong
+regularization technique, i.e. ASAM, to prevent vision transformer from overfitting.
+
+
+{目前的总结: 
+(1) SAFA: 2 cnn + polar transform, 用了 CVUSA + CVACT;
+(2) L2LTR: resnet + vit, 用了 CVUSA + CVACT;
+(3) TransGeo: pure transformer, 用了 CVUSA + VIGOR;
+
+目前的思路，作者想用vision transformer但是vanilla vit requires a large scale dataset; to overcome this 
+limitation, deit adopts strong data augmentation to regularize the training and only require a 
+medium-scale dataset; however since most data augmentation strategies such as (check what 
+strategies are used by deit????) random cropping will lead information loss for our cross-view geo-
+localization task, it is not recommended to use data augmentation for regularization;
+因此，TransGeo的作者采用ASAM技术for regularization and no data augmentation are adopted here;
+
+我目前的想法是，vit and deit都表示自己drop the locality of cnn, 但是swint是在tradeoff locality and long
+dependency, 但是swint又没有global attention operation, 这样相距很远的objects之间的correlation could not 
+be considered, 所以我想在swint最开始加一层global attention operation, 并在中间periodically加上global attention
+operation，我猜测hybrid global and local attention operation could improve model;
+}
+
+
+
+3. Method
+
+we first formulate the problem and present an overview of our approach in Sec 3.1.
+then in Sec 3.2 we introduce the vision transformer components that are used in our method.
+we present the proposed attention guided non-uniform cropping strategy in Sec 3.3, which removes a 
+large portion of patches while maintaining retrieval performance.
+finally, we introduce the regularization technique (ASAM) in sec 3.4
+
+3.1 problem statement and method overview;
