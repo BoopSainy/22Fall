@@ -150,7 +150,7 @@ localization task, it is not recommended to use data augmentation for regulariza
 我目前的想法是，vit and deit都表示自己drop the locality of cnn, 但是swint是在tradeoff locality and long
 dependency, 但是swint又没有global attention operation, 这样相距很远的objects之间的correlation could not 
 be considered, 所以我想在swint最开始加一层global attention operation, 并在中间periodically加上global attention
-operation，我猜测hybrid global and local attention operation could improve model;
+operation，我猜测hybrid global and local attention operation could improve performance;
 
 loss function and training method utilize contents of contrastive learning;
 }
@@ -169,3 +169,72 @@ finally, we introduce the regularization technique (ASAM) in sec 3.4
 given a set of query stree-view images {I_s} and aerial-view reference images {I_a}, our objective is to learn an
 embedding space in which each street-view query I_s is close to its corresponding ground-truth aerial image I_a.
 Each street-view image and its ground-truth aerial image are considered as a positive pair 
+
+
+given a set of query street-view images {I_s} and aerial-view reference images {I_a}, our objective
+is to learn an embedding space in which each street-view query I_s is close to its corresponding
+ground-truth aerial image I_a. each street-view image and its ground-truth aerial image are considered
+as a positive pair, other pairs are considered as negative. if there are multiple aerial images
+covering one street-view image, e.g. VIGOR dataset, we consider the nearest one as the positive, and
+avoid sampling the other neighboring aerial images in the same batch to prevent ambiguous supervision.
+{如果像VIGOR数据集中，很多张aerial-view images对应着同一个street-view image,那么要用那张nearest? aerial-view
+image中心点最接近street-view image拍摄地点的?那一张作为positive sample, 同时要avoid sampling the other
+neighboring aerial images in the same batch to prevent ambiguous}
+
+
+!!! overview of method, as shown in fig 1, we train two separate transformer encoders, i.e. Ts, Ta, to
+generate embedding features for street and aerial views, respectively.
+
+the model is trained with soft-margin triplet loss:
+L_triplet = log(1 + exp(alpha*(dis_pos - dis_neg)))
+
+here dis_pos and dis_neg denote the squared l_2 distance of the positive and negative pairs. In a mini-
+batch with N street-view and aerial-view image pairs, we adopt the exhaustive strategy to sample
+2N(N-1) triplets. {这里意思是，假设一个batch有N对street-view & aerial-view image pairs，那么
+每个street-view image做一次anchor, 每个aerial-view image也都做一次anchor, 最后共有2 * N * (N-1)种triplets}. 
+we apply l_2 normalization on all the output embedding features{那岂不是，所有的embedding features
+都被限制为模长为1的高维向量？} 
+{？？这里那这里是否可以使用一些其他的contrastive learning loss function, such as N-pair?}
+
+fig 1 shows the overall pipeline of our method. stage 1 applies regular training with eq 1. in stage 2,
+we adopt the attention map of aerial image as guidance and perform non-uniform cropping (sec. 3.3), 
+which removes a large number of uninformative patches in reference aerial images. we then reallocate
+the saved computation for higher images resolution only on important regions.
+{???具体怎么实现的，是crop out the patches with less information, and increase the resolution of 
+remaining patches, then project increased patches to previous embedding dimension so that the 
+patch embedding dimension is unchange??如果patch embedding dimension变了的话，the position information;
+但是如果我们想用swint的话，似乎不太好执行这种non-uniform cropping operations? 因为我需要保持图像的uniform进行
+windows partition？}{???如果可以迁移attend and zoom-in, if we could use it for both street-view image
+and aerial-view image?}
+
+3.2 vision transformer for geo-localization:
+we briefly describe the vision transformer components that are adopted in our method, i.e. patch 
+embedding, position embedding, and multi-head atyention.
+
+patch embedding: given the input images I in shape of (H, W, C), the patch embedding block converts 
+them into a number of tokens as the input of transformer encoder. here H, W, C denote the height, width
+and channel numbers of I. as shown in fig 1, images are first divided into N PXP patches (we use P = 16),
+I_p is in shape of (N, PxPxC). all the N patches are futher flattened as (N, P^2*C) and fed into
+the trainable linear projection layer to generate N tokens, I_t is in shape of (NxD). D is the 
+embedding feature dimension of transformer encoder.
+
+{？？？它最后是怎么得到attention map的，attention map的尺寸和原图尺寸一样吗？如果不一样是否需要resize,
+那么我是否可以这样attention guide一下，first, do not downsample the image too heavily in swin transformer,
+preserve a relatively high feature map size, then, use the attention map to heriarchically create 
+new aerial image, for those patch with high attention outputs, we increase their resolution, with 
+low attention, we maintain original resolution or even blur them}
+
+class token: in addition to the N image tokens, vit adds an additional learnable class token following
+bert, to integrate classification information from each layer. the output class token of the later layer
+is then fed into an MLP head to generate the final classification vector. we use the final output 
+vector as the embedding feature and train it with the loss in Eq. 1.
+
+learnable position embedding: position embedding is added to each token before patches are sent to
+transformer encoder to maintain the positional information. we adopt the learnable position embedding
+in ViT, which is a learnable matrix in shape of (N+1)xD for all the (N+1) tokens including the 
+class token. the learnable position embedding enables our two-stream transformer to explicitly learn the
+best positional encoding... the position embedding also makes it possible to remove arbitrary tokens
+without changing the position information of other tokens, inspiring us for employing the non-uniform
+corpping.
+
+
