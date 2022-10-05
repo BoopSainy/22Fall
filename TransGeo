@@ -71,8 +71,8 @@ consumption, and inference time than cnn-based methods.
 
 
 {DeiT - 1st
-; SAFA - 4th; metric learning loss; polar transform - 3rd; cutmix; ASAM - 2nd; L2LTR - 5th; 
-contrastive learning - pinned}
+; SAFA - 4th; metric learning loss~; polar transform - 3rd; cutmix; ASAM - 2nd; L2LTR - 5th; 
+contrastive learning - pinned~}
 
 
 
@@ -236,5 +236,41 @@ class token. the learnable position embedding enables our two-stream transformer
 best positional encoding... the position embedding also makes it possible to remove arbitrary tokens
 without changing the position information of other tokens, inspiring us for employing the non-uniform
 corpping.
+
+
+3.3. attention guided non-uniform cropping
+when looking for cues for image matching, humans generally take the first glance to find the
+most important regions, then attend to only the important regions and zoom-in to find more
+details with high resolution. for cross-view geo-localization, "the attend and zoom-in"
+procedure can be more beneficial, because two views only share a small number of visible
+regions. a large number of regions in one view, e.g. roof of tall buildings in aerial view,
+maybe invisible in the other view, thus contribute negligibly to final similarity as shown
+in fig.2. those regions may be removed to reduce the computation and memory cost. however,
+import regions are often scattered across the image, therefore the uniform cropping (i.e.
+rectangular areas) in cnns cannot remove scattered regions, as the cropped image must be
+rectangular. we thus propose the attention guided non-uniform cropping in our pure transformer
+architcture.
+
+as shown in fig.2, we employ the attention map in the last transformer encoder of aerial-view
+branch, because it represents the contribution of each token to the final output. since only
+the output corresponding to class token is connected with the mlp head, we select the 
+correlation between class token and all other patch tokens as the attention map and reshape
+to the original image shape. in the example of fig.2, the important regions mainly belong to
+the street area, and the other buildings occluded in street-view mostly have a low attention
+score. we then determine what portion of patches, beta (e.g. 64%), to maintain after cropping.
+
+to zoom-in for more detailed information...
+
+if beta x gamma = 1, then the final number of tokens will be the same as our stage-1 baseline
+model. we can also use gamma = 1 to merely reduce the number of tokens without increasing
+resolution, therefore improving the computation efficiency. in practice, the attention maps
+only need to be computed once and can be saved during the stage-1 training,
+
+
+3.4 model optimization
+to train our transformer model without augmentation, we adopt a strong regularization / 
+generalization technique, ASAM. while optimizing the main loss in eq. 1, we also use ASAM to
+minimize the adaptive sharpness of the loss landscape, so that the model converges with a 
+smooth loss curvature to achieve a strong generalization ability. 
 
 
