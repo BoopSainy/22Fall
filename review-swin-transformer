@@ -1,0 +1,7 @@
+This paper presents a new vision transformer, called swin transformer, that capably serves as a general-purpose
+backbone for computer vision. challenges in adapting transformer from language to vision arise from differences
+between two domains, such as large variations in the scale of visual entities and the high resolution of pixels
+in images compared to words in text. to address these differences, we propose a hierarchical transformer
+whose representation is computed with shifted windows. the shifted windowing scheme brings greater efficiency
+by limiting self-attention computation to non-overlapping local windows while also allowing for cross-window
+connection. this hierarchical architecture has the flexibility to model at various scales and 
