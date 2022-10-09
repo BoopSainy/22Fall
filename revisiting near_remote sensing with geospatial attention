@@ -1,0 +1,19 @@
+reading note: https://arxiv.org/pdf/2204.01807.pdf
+
+abstract:
+this work addresses the task of overhead image segmentation when auxiliary ground-level images are avaiable.
+recent work has shown that performing joint inference over these two modalities, often called near/remote sensing, can yield
+significant accuracy improvements. extending this line of work, we introduce the concept of geospatial attention, a geometry-aware
+attention mechanism that explicitly considers the geospatial relationship between the pixels in a ground-level image and a geographic
+location. 
+
+we propose an approach for computing geospatial attention that incorporates geometric features and the appearance of the overhead and
+ground-level imagery. we introduce a novel architecture for near/remoting sensing that is based on geospatial attention and demonstrate
+its use for five segmentation tasks. the results demonstrate that our method siginificantly outperforms the previous state-of-the-art
+method.
+
+introduction,
+
+accurately monitoring the earth's surface is critical to many scientific fields and to society at large. important applications include
+weather forecasting, disaster response, population density estimation, and environmental monitoring. traditionally these applciations
+have relied on remote sensing approaches applied to overhead imagery from satellite or airborne cameras
