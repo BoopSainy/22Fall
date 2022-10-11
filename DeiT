@@ -1,0 +1,69 @@
+Training data-efficient image transformers & distillation through attention;
+
+abstract:
+recently, neural networks purely based on attention were shown to address image understanding tasks such as image
+classification. these high-performing vision transformers are pre-trained with hundreds of millions of images using
+a large infrastructure, thereby limiting their adoption.
+
+in this work, we produce competitive convolution-free transformers by training on Imagenet only. we train them on
+a single computer in less than 3 days. our reference vision transforemr (86M parameters) achieves top-1 accuracy
+of 83.1% (single-crop) on imagenet with no external data.
+只在IMAGENET上训练了，没有用其他的数据
+
+{"I have come across few (machine learning classification problem) journal papers mentioned about evaluate 
+accuracy with Top-N approach. data was shown hat top-1 accuracy = 42.5%, and top-5 accuracy = 72.5% in the same
+training, test condition. i wonder how to calculate this percentage of top-1 and top5? can some one show me 
+exmaple and steps to calculate this?
+
+best solution: top-1 accuracy is the conventional accuracy: the model answer (the one with highest probablity)
+must be exactly the expected answer;; top-5 accuracy means that any of your model 5 highest probability answers
+must match the expected answer. For instance, let's say you are applying machine learning to object recognition
+using a neural network. a picture of a cat is shown, and these are the outputs of your neural network:
+tiger-0.4, dog-0.3, cat-0.1, lynx-0.09, lion-0.08, bird-0.02, bear-0.01;; using top-1 accuracy, you count this 
+output as wrong, because it only considers the prediction term with highest probability which is tiger here. Using
+top-5 accuracy, you count this output as correct, because cat is among the top-5 guesses.}
+
+more importantly, we introduce a teacher-student strategy specific to transformers. it relies on a distillation token
+ensuring that the student learns from the teacher through attention. we show the interest of this token-based 
+distillation, especially when using a convnet as a teacher. this leads us to report results competitive with convnets
+for both imagenet and when transferring to other tasks. we share our code and models.
+{用了distillation token; teacher-student strategy}
+
+1 introduction
+convolution neural networks have been the main design paradigm for image understanding tasks, as initially demonstrated 
+on image classification tasks. one of the ingredient to their success was the availability of a large training set,
+namely imagenet. motivated by the succuess of attention-based models in natural language processing, there has been
+increasing interest in architectures leveraging mechanisms within convnets. more recently several researchers
+have proposed hybrid architecture transplanting transformer ingredients to convnets to solve vision tasks.
+{经历了两个阶段，第一阶段是只是把attention mechanism的思想移植到convnet里面；第二阶段是直接把attention mechanism layer移植到
+convnet里面构成hybrid architecture}
+
+the vision transformer (vit) introduced by dosovitskiy et al. is an architecture directly inherited from natural
+language processing, but applied to image classification with raw image patches as input. their paper presented
+excellent results with transformers trained with a large private labelled image dataset (JFT-300M, 300 millions 
+images). the paper concluded that transformers "do not generalize well when trained on insufficient amounts of data"
+and the training of these models involved extensive computing resources.
+
+in this paper, we train a vision transformer on a single 8-gpu node in two to three days (53 hours of pre-training,
+and optionally 20 hours of fine-tuning) that is competitive with convnets having a similar number of parameters and 
+efficiency. it uses imagenet as the sole training set. we build upon the visual transformer architecture from
+dosovitskiy et al. and improvements included in the timm library. with our data-efficient image transformers (DeiT),
+we report lagre improvements over previous results, see figure 1. our ablation study details the hyper-parameters and
+key ingredients for a successful training, such as repeated augmentation.
+
+we address another question: how to distill these models? we introduce a token-based strategy, specific to 
+transformers and denoted by DeiT_m, and show that it advantageously replaces the usual distillation.
+
+in summary, our work makes the following contributions:
+1. we show that our neural networks that contains no convolutional layer can achieve competitive results against
+the state-of-the-art on imagenet with no external data. they are learned on a single node with 4 gpus in three days.
+our two new models DeiT-S and DeiT-Ti have fewer parameters and can be seen as the counterpart of ResNet-50 and
+ResNet-18. {提出了一种pure transformer based model可以取得competitive results when trained on imagenet，两种模型变种
+deit-s, deit-ti可以作为counterpart of resnet-50 and resnet-18}
+
+{distillation? knowledge distillation is model compression method in which a small model is trained to mimic
+a pre-trained, larger model (or }
+
+2. we introduce a new distillation procedure based on a distillation token, which plays the same role as the class
+token, except that it aims at reproducing the label estimated by the teacher. both tokens interact in the 
+transformer through attention.
