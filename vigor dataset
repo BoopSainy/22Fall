@@ -1,0 +1,189 @@
+cross view image geo-localization aims to determine the locations of street-view query images by matching with 
+gps-tagged reference images from aerial view. recent works have achieved surprisingly high retrieval accuracy
+on city-scale datasets. however, these results rely on the assumption that there exists a reference image exactly
+centered at the location of any query image, which is not applicable for practical scenarios. in this paper, we 
+redefine this problem with a more realistic assumption that the query image can be arbitrary in the area of interest
+and the reference images are captured before the queries emerge. this assumption breaks the one-to-one retrieval 
+setting of existing datasets as the queries and reference images are not perfectly aligned pairs, and there may be 
+multiple reference images covering one query location. to bridge the gap between this realistic setting and existing
+datasets, we propose a new large-scale benchmark-vigor-for cross view image geo-localization beyond one-to-one
+retrieval. we benchmark exsiting state of the art methods and propose a novel end-to-end framework to lcoalize the 
+query in a coarse-to-fine manner. apart from the image-level retrieval accuracy, we also evaluate the localization
+accuracy in terms of the actual distance (meters) using the raw gps data. extensive experiments are conducted under
+different application scenarios to validate the effectiveness of the proposed method. the results indicate
+that cross-view geo-localization in this realistic is still challenging, fostering new research in this direction. our
+dataset and code will be released at...
+
+introduction
+the objective of image based geo localization is to determine the location of a query image by finding the most
+similar image a gps-tagged reference database. such technologies have proven useful for accurate localization 
+with noisy gps signals and navigation in crowded cities. recently, there has been a surge of interest in cross-view
+geo-localization, which uses gps-tagged aerial-view images as reference for street-view queries. however, the 
+performance may suffer from a large apperance gap between query and reference images.
+
+recent works have shown that the performance of cross-view image matching can be significantly improved by {feature 
+aggregation and sample mining strategies}. when the orientation of street-view (or ground-view) image is available (
+provided by phone-based compass), state of the art methods can achieve a top-1 retrieval accuracy over 80%, which 
+shows the possibility of accurate geo-localization in real-world settings. however, existing datasets simply assume
+that each query ground-view image has one corresponding reference aerial-view image whose center is exactly aligned
+at the location of the query image. we argue this is not practical for real work applications, because the query image
+can occur at arbitrary locations in the area of interest and the reference images should be captured before the 
+queries emerge. in this case, perfectly aligned one-to-one correspondence is not guaranteed.
+
+in light of the novelty of this problem, we propose a new benchmark (vigor) to evaluate cross-view geo-localization 
+in a more realistic setting. briefly, given an area of interest (aoi), the reference aerial images are densely sampled
+to achieve a seamless coverage of the aoi and the street-view queries are captured at arbitrary locations. in total,
+90,618 aerial images and 238,696 street panoramas arecollected from 4 major cities in the United States (see details
+in Sec. 3). The new dataset gives rise to two fundamental differences between this work and piror research.
+
+beyond one-to-one: previous research mainly focuses on the one-to-one correspondence because existing datasets 
+consider perfectly aligned image pairs as default. however, vigor enables us to explore the effect of reference 
+samples that are not centered at the locations of queries but still cover the query area. as a result, there could be
+multiple reference images partially covering the same query location, breaking the one-to-one correspondence. in our
+geo-localization method, we design a novel hybrid loss to take advantage of multiple reference images during training.
+
+beyond retrieval: image retrieval can only provide image-level localization. since the center alignment is not 
+guaranteed in our dataset, after the retrieval, we further employ a within-image calibration to predict the offset
+of the query location inside the retrieved image. therefore, the proposed joint-retrieval-and-calibration framework
+provides a coarse-to-fine localization. the whole pipeline is end-to-end, and the inference is fast as the offset
+prediction shares the feature descriptors with the retrieval task. moreover, our dataset is also accompanied with
+raw gps data. thus a more direct performance assessment, i.e. localization accuracy in terms of real-world distance (
+e.g. meters), can be achieved on our dataset.
+
+our main contributions can be summarized as follows:
+we introduce a new dataset for the problem of cross-view image geo-localization. this dataset, for the first time,
+allows one to study this problem under a more realistic and practical setting and offers a testbed for bridging the
+gap bewteen current research and practical applications.
+we propose a novel joint-retrieval-and-calibration framework for accurate geo-localization in a coarse-to-fine manner,
+which has not been explored in the past.
+we develop a new hybrid loss to learn from multiple reference images during training, which is demonstrated to be
+effective in various experimental settings.
+we also validate the potential of the proposed cross-view geo-localization framework in a real-world application
+scenario (assistive navigation) by simulating noisy gps.
+
+2. related work:
+cross-view datasets.
+a number of dataset have been proposed for cross-view geo-localization. lin et al. consider both satellite image
+and land cover attributes for cross-view geo-localization. 6,756 ground-view images and 182,988 aerial images
+are collected from charleston, south carolina. although the aerial images are densly sampled, they force a one-to-one
+correspondence between two views and evaluation in terms of distance is not available. the original cvusa is a 
+massive dataset containing more than 1 million ground-level and aerial images from multiple cities in the United 
+States. Zhai et al. further make use of the camera's extrinsic parameters to generate aligned pairs by warping the 
+panoramas, resulting in 35,532 image pairs for training and 8,884 image pairs for testing. this version of cvusa
+is the most widely used dataset in recent research and we refer to it as cvusa if not specified. Vo consists of
+
+3. vigor dataset,
+
+problem statement: given an area of interest (aoi), our objective is to localize an arbitrary street-view query
+in this area by matching it with aerial reference images. To guarantee that any possible query is covered by at least
+one reference image, the reference aerial images must provide a seamless coverage of the aoi. as shown in fig.1 (a),
+coarsely sampled reference images (bloack square boxes) are not able to provide full coverage of the aoi, and an 
+arbitrary query location (the red star) may lie in the area between reference samples. even if the query location (the
+yellow star) lies at the edge of a reference aerial image, this reference image only shares partial (at most half)
+scence with the one whose center is at the query location, which may not provide enough information to be distinguished
+from other negative reference images. as shown in fig.1(b), if query locations (red stars) lie at the central area (
+the black dotted box) of the LxL aerial image, the query and reference images are defined as positive samples for 
+each other. other queries (blue stars) outside the central area are defined as semi-positive samples. to guarantee
+that any arbitrary query has one positive reference image, we propose to densely sample the aerial images with 50%
+overlap along both latitude and longitude directions as demonstrated in fig.1(c). by doing so, any arbitrary query
+location (the red star) in the aoi is covered by four reference images (size LxL). the green box denotes the positive
+reference and the other three semi-positive references are denoted as blue boxes. the positive reference is
+considered as ground-truth, because it has the nearest gps to the query and contains the most shared objects with the
+query image. the red box denotes the perfectly aligned aerial image. based on the definitions of positive and semi-
+positive as illustrated in fig.1(b), we can easily see that all positive reference images have an iou greater than
+0.39 with the perfectly aligned reference (see fig.1(d)). the iou of a typical positive sample..
+{vigor dataset小结1：对于一片area of interest，比如整个纽约市区，作者在取reference aerial-view images的时候，首先避开了coarsely
+sample，因为如果说取到的aerial-view images不能很好的overlap去覆盖整个市区，那么有可能有些query就没有对应的reference image；所以
+需要densely sample,但是也不能随意取，作者采用了从一个顶点开始，每隔L/2的距离后取一个LxL的reference image，如此一来，for any
+arbitrary query image, 它必会有一个对应的positive reference image和3个semi-positive reference image, 之后，作者设定这个
+positive reference image as ground truth reference image因为它中心点的gps距离query location最近，并且这块reference image
+share more objects with query image.}
+{作者还提到了iou的问题，一个positive reference image和perfectly aligned image的iou ranging from 0.39 - 1；一个semi-positive
+image 和perfectly aligned image的iou ranging from 0.14-0.39}
+
+data collection: as shown in fig.2, we collect 90,618 aerial images covering the central areas of four cities, i.e. 
+New York City (Manhatan), San Francisco, Chicago, and Seattle, as the aoi using the Google Maps Static API. Then 
+239,696 street-view panorama images are collected with the google street-view static api at zoom level 2 on most of 
+the streets. all the gps locations of panorama images are unique in our dataset, and the typical interval between
+samples is about 30m. we perform data balancing on the original panoramas to make sufe that each aerial image has
+no more than 2 positive panoramas (see fig.3, the distributions are included in the supplementary material). this 
+procedure results in 105,214 panoramas for the geo-localization experiments. also, around 4% of the aerial images
+cover no panoramas. we keep them as distraction samples to make the dataset more realistic and challenging. the
+zoom level for satellite images is 20 and the ground resolution is around 0.114m. the raw image sizes for aerial-view
+and ground-view are 640x640 and 2048x1024, respectively. industrial-grade gps tags for both aerial-view
+{先按照设定好的方案收集90618的aerial view images, 然后收集了238696的street-view images；接着通过data balance技术，使得每一个
+reference aerial view image的positive region里只有不超过两个query images，与此同时会有4%的reference image里没有任何的
+panorama}
+
+head to head comparison: table 1 shows a comparison between our dataset and previous benchmarks. the most widely used
+dataset, cvusa, consists of images mainly collected at suburban areas. our dataset, on the other hand, is collected 
+for urban environments. in practice, the gps signal is more likely to be noisy in urban areas than suburban (e.g.
+the phone-based gps error can be up to 50 meters in Manhattan). therefore, our dataset has more potential application
+scenarios, e.g. vision-based mobile assistive navigation. besides, urban areas are more crowded with tall buildings.
+the mutual semantics between ground and aerial views are significantly reduced by occlusions and shadows, making 
+our dataset more challenging than cvusa. furthermore, previous datasets simply adopt one-to-one retrieval for 
+evaluation, which is not the case of real-world scenarios, because it is impossible to predict the location of
+an arbitrary query and capture an aligned reference image there beforehand. our dataset considers arbitrary query
+locations, and even the ground-truth reference image does not have the same gps location as the query; thus it is 
+more realistic but challenging for retrieval. our dataset also provides the raw gps data meter-level evaluation which 
+is the ultimate goal of localization applications. we believe that our dataset is a great complement to the
+existing cross-view image datasets, and can be served as a testbed for bridging the gap between current research 
+and practical applications.
+
+the evaluation protocol: we design two evaluation settings for the experiments, i.e. same-area and cross-area 
+evaluation, according to different application scenarios.
+same-area: if one plans to build an aerial-view reference database for arbitrary street queries in an aoi, the goal
+of model training is to handle arbitrary new queries. therefore, the best solution would be collecting gps-tagged
+queries
+cross-area: reference aerial-view images and query images from newyork and seattle will be used for training and
+images from chicago and sanfrancisco will be used for testing.
+{感觉same-area的training and evaluation protocol是为了训练出一个模型，这个模型的功能是，针对某一指定区域aoi,当有用户在此区域发出new
+query image时，模型可以尽可能精准的localize his location;
+而cross-area的training and evaluation protocol是为了训练出一个模型，这个well-trained模型并不局限于localize query from 
+training reference所在的区域，而是希望它能迁移至其它陌生区域，比如我的训练集中并没有出现过来自北京上海的reference and query images,
+那么我用纽约西雅图reference and query images所训练出的模型能否继续适用呢？seems like involve the feature gap between 
+different city styles???}
+
+
+4 coarse-to-fine cross-view localization
+in this section, we propose a joint-retrieval-and-calibration framework for geo-localization in a coarse-to-fine
+manner. sec. 4.1 introduces a strong baseline built with state-of-the-art techniques based on only the positive
+samples.
+sec 4.2 proposes an iou-based semi-positive assignment loss to leverage the supervision information of semi-positive
+samples. with the retrieved best matching reference image, sec 4.3 aims to estimate the offset of the query gps
+location relative to the center of the retrieved aerial-view image as a meter-level calibration.
+4.1 baseline framework
+to achieve satisfactory results on the proposed dataset, it is important to adopt state of the art techniques to build
+a strong baseline. therefore, we employ the feature aggregation module of SAFA (spatial-aware feature aggregation)
+
+Feature Aggregation: SAFA is a combination of polar transformation, Siamese backbone and feature aggregation blocks. 
+however, the polar transformation assumes that the ground-view gps is at the center of the corresponding aerial-view 
+reference image, which does not apply in our case. therefore, we only adopt the feature aggregation in our framework.
+the main idea of the feature aggregation block is to re-weight the embeddings in accordance with their postions.
+{supplementary content to explain what is feature aggregation: 
+as illustrate in figure 2, we first employ a backbone network, i.e., the first sixteen layers of vgg19, to extract
+features from ground and polar-transformed aerial images. considering the features from aerial images undergo 
+distortions, we intend to impose an attention mechanism to select salient features while suppressing the features
+caused by the distortions}
+{这个好像不用了}
+
+{metric learning: unlike feature transformation, metric learning techniques are independent of the alignment
+assumption. general metric learning aims to learn an embedding space where positive samples (matched pairs) are 
+close to each other, while negative samples (unmatched pairs) have a large distance between each other. recent
+works usually adopt the loss from [8], i.e. a modified triplet loss, along with the within}
+
+mining strategy: as the training accuracy increases, most of the negative samples; generating all possible triplets
+would result in many triplets that are easily satisfied. these triplets would not contribute to the training and
+result in slower convergence, as they would still be passed through the network. it is crucial to select hard
+triplets, that are active and can therefore contribute to improving the model. the following ...
+
+in order to ensure fast convergence it is crucial to select triplets tat violate the triplet constratin in eq1.
+this means that, given anchor image x_a, we want to select positive images x_p (hard positive) such that
+argmax_x_p(dis(f(x_a), f(x_p))) and similarly hard negative x_n such that argmin_x_n(dis(f(x_a), f(x_n))).
+
+it is infeasible to compute the argmin and argmax across the whole training set. additionally, it might lead to 
+poor training, as mislabelled and poorly imaged faces would dominate the hard positives and negatives.
+
+mining the hardest triplt in a batch helps when there exists some hard negative samples, but it does not apply when
+a small batch size, e.g. 12 pairs (24 images), is used due to the high resolution images, e.g. panoramic stree-view
+images. to find the global hard negative samples in a subset with N_m pairs, the embedding vectors of 
