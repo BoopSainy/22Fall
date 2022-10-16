@@ -1,0 +1,133 @@
+Distilling the knowledge in a neural network
+
+abstract:
+a very simple way to improve the performance of almost any machine learning algorithm is to train many different
+models on the same data and then to average their predictions. unfortunately, making predictions using a whole
+ensemble of models is cumbersome and may be too computationally expensive to allow deployment to a large number
+of users, especially if the individual models are large neural nets. Caruana and his collaborators have shown that
+it is possible to compress the knowledge in an ensemble into a single model which is much easier to deploy and
+we develop this approach further using a different compression technique. we achieve some surprising results on 
+MNIST and we show that we can significantly improve the acoustic model of a heavily used commercial system by
+distilling the knowledge in an ensemble of models into a single model. we also introduce a new type of ensemble
+
+introduction:
+many insects have a larval form that is optimized for extracting energy and nutrients from the environment and a
+completely different adult form that is optimized for the very different requirements of traveling and 
+reproduction. in large-scale machine learning, we typically use very similar models for the training stage and the 
+deployment stage despite their very different requirements: for tasks like speech and object recognition, 
+training must extract structure from very large, highly redundant datasets but it does not need to operate in 
+real time and it can use a huge amount of computation. deployment to a large number of users, however, has much
+more stringent requirements on latency and computational resources. the analogy with insects suggests that we 
+should be willing to train very cumbersome models if that makes it easier to extract structure from the data. 
+the cumbersome model could be an ensemble of separately trained models or a single very large model trained with a
+very strong regularizer such as dropout. once the cumbersome model has been trained, we can then use a different
+kind of training, which we call "distillation" to transfer the knowledge from the cumbersome model to a small model
+that is more suitable for deployment. a version of this strategy has already been pioneered by rich caruana and
+his collaborators. in their important paper they demonstrate convincingly that teh knowledge acquired by a large
+ensemble of models can be transferred to a single small model.
+
+{最初knowlegde distillation的motivation就是，比如对于昆虫而言，很多昆虫（模型）都是有两种形态的，幼虫们的形态都是最优于去
+摄取能量和营养（train your model to easily capture the complicated mapping relationship between input and output，而
+当幼虫长大后（well-trained cumbersome model），它们就会变成另一种形式，这种新形态有利于它们迁徙和繁衍。作者认为机器学习模型
+也应该如此，在训练阶段我们或许会设计各种复杂庞大的模型或者多个模型组成的ensemble model，它们可以很好的capture the complicated
+mapping relationship between input and output；但是当模型训练好后，将这种庞大的模型部署在用户端通常是不现实的，因为用户端
+的模型需要考虑到inference speed(latency) and inference cost(computational resource)，所以作者提出了一种蒸馏方法，
+通过distillation technique，可以用well-trained cumbersome model辅助训练a single small model which is more suitable
+for deployment}
+
+a conceptual block that may have prevented more investigation of this very promising approach is that we tend to
+identify the knowlegde in a trained model with the learned parameter values and this makes it hard to see how we
+can change the form of the model but keep the same kwowlegde. a more abstract view of the knowledge,...
+but a side-effect of the learning is that the trained model assigns problabilities to all of the incorrect answers
+and even when these probabilities are very small, some of them are much larger than others. the relative 
+probabilities of incorrect answers tell us a lot about how the cumbersome model tends to generalize. an image of 
+a BMW, for example, may only have a very small chance of being mistaken for a garbage truck, but that mistake
+is still many times more probable than mistaking it for a carrot.
+{比如，对于一个分类模型，妨碍knowledge transfer的一个因素是，人们通常把well-trained cumbersome model's参数当作是所学习到的
+knowledge，所以想要transfer knowledge意味着要transfer parameters，但是想要把transfer parameters to a model with 
+different form是很困难的。
+更抽象一点，人们可以把模型学习的knowledge当作是input vector and output vector's mapping，对于分类模型，输出通常是对各种类别的
+概率分布，理想的输出除了会对groud-truth class有一个较大的概率以外，它还会对其他incorrect classes有概率，这些对于incorrect 
+classes的概率们也蕴含着一些模型的知识}
+
+it is generally accepted that the objective function used for training should reflect the true objective of the 
+user as closely as possible. despite this, models are usually trained to 
+
+an obvious way to transfer the generalization ability of the cumbersome model to a small model is to use the 
+class probabilities produced by the cumbersome model as "soft targets" for training the samll model. for this 
+transfer stage, we could use the same training set or a separate "transfer" set. when the cumbersome model 
+is a large ensemble of simpler models, we can use an arithmetic or geometric mean of their individual predictive
+distributions as the soft targets. when the soft targets have high entropy, they provide much more information
+per training case than hard targets and much less variance in the gradient between training cases, so the small
+model can often be trained on much less data than the original cumbersome model and using a much higher 
+learning rate.
+{用cumbersome model的predictive distribution as the soft target to train the small model; if the cumbersome model
+is a large ensemble of multiple simpler models, then use their individual predictive distribution's arithmetic 
+mean as the soft target;}
+
+for tasks like MNIST in which the cumbersome model almost always produces the correct answer with very high
+confidence, much of the information about the learned function resides in the ratios of very small probabilities
+in the soft targets. for example, 一张2输入进模型，might be given a probability of 10^-6 of being a 3 and 10^-9 of 
+being a 7 whereas for another verison it may be the other way around. cumbersome模型所学习到的内容可以被embedded to 
+its predictive distribution for an input vector; 比如说如果small model使用hard target [0, 0, 1, 0, 0,....]作为
+training target，那么模型需要从头学起，模型只被给了这样一条信息：给定的图片是2。但是如果我们使用well-trained cumbersome
+model 所输出的predictive distribution as training target for small model的话，这个时候小模型所得到的信息不止是：这张输入
+的图片是2，它还被提供了其他信息：相比于另一张2，这张输入的2比另一张更像3，而另一张比这一张更像7。这种由cumbersome model's predictive
+distribution所提供的额外消息有助于small model's training;
+
+然而，通常incorrect classes' probabilities都太小了，小到可能无法产生足够的影响。对于这个问题，caruana决定采用产生final 
+probability distribution的softmax层之前的logit输入作为soft target；hinton则是使用了temperature softmax，带了temperature
+hyperparameter的新softmax
+
+the transfer set that is used to train the small model could consist entirely of unlabeled data or we could use
+the original training set. we have found that using the original training set works well, especially if we add
+a small term to the objective function that encourages the small model to predict the true targets as weel as 
+matching the soft targets provided by the cumbersome model.
+{可以选择用一组完全unlabeled data去训练小模型，输入unlabeled data to well-trained cumbersome model; get the
+predictive distribution as soft target; use the soft target as target for training the small model;
+
+同样也可以继续用original training set that is used to train the cumbersome model; 这样一来，when training the small
+model, we not only have soft target, we could also add a term to objective function that encourage model's output
+be close to the truth-label. 这种得到了很好的效果}
+
+
+
+2. distillation:
+neural networks typically produce class probabilities by using a "softmax" output layer that converts the logit,
+zi, computed for each class into a probability, qi, by comparing zi with other logits.
+
+qi = exp(zi/T)/ sum(exp(zk/T))
+where T is a temperature that is normally set to 1. using a higher value for T produces a softer probability 
+distribution over classes
+
+in the simplest form of distillation, knowledge is tansferred to the distilled model by training it on a transfer
+set and using a soft target distribution for each case in the transfer set that is produced by using the 
+cumbersome model with a high temperature in its softmax. 
+{最简单的蒸馏就是：知识被迁移到new small distilled model by, 使用一个transfer dataset去训练这个小模型，模型的输出要和
+soft target distribution构建cross entropy loss function; 每个输入的soft target都是由well-trained cumbersome model
+的输出得到的 (!!!这里我感觉是，训练cumbersome model时还是用normal softmax, 然后infer soft target时改成用temperature softmax)，
+即将每个case in transfer dataset input到well-trained cumbersome model中， 然后得到的predictive distribution is 
+the soft target for this case。}
+the same high temperature is used when training the distilled model, but after it has been trained, it uses a 
+temperature of 1 ???意思是训练的时候就要用high temperature softmax, but after training, use normal softmax for 
+inferring?
+
+when the correct labels are known for all or some of the transfer set, this method can be significantly improved
+by also training the distilled model to produce the correct labels. one way to do this is to use the correct
+labels to modify the soft targets, but we found that a better way is to simply use a weighted average of two
+different objective functions. the first objective function is the cross entropy with the soft targets and 
+this cross entropy is computed using the same high temperature in the softmax of the distilled model as was
+used for generating the soft targets from the cumbersome model. 
+the second objective function is the cross entropy with the correct labels. this is computed using exactly the
+same logits in softmax of the distilled model but at a temperature of 1. we found that the best results were 
+generally obtained by using a considerably lower weight on the second objective function. 
+
+{一个dataset D, 一个cumbersome model BM, 一个small model SM；
+train BM on D with normal softmax output layer; then change temperature higher to obtain the soft targets for
+every case in the D;
+train SM on D, SM has 2 outputs, one is softmax output, one is the T-softmax output where T is same as the 
+T used in BM to generate soft targets. then 1st output for cross entropy with truth-label, 2nd output for
+cross entropy with soft targets. weight for 2nd loss term is much more greater than the weight for 1st loss
+term.
+after SM is well-trained, infer samples by normal softmax}
+
