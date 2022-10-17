@@ -1,3 +1,4 @@
+https://arxiv.org/pdf/1503.02531.pdf
 Distilling the knowledge in a neural network
 
 abstract:
@@ -130,4 +131,89 @@ T used in BM to generate soft targets. then 1st output for cross entropy with tr
 cross entropy with soft targets. weight for 2nd loss term is much more greater than the weight for 1st loss
 term.
 after SM is well-trained, infer samples by normal softmax}
+
+
+
+
+note2:
+https://neptune.ai/blog/knowledge-distillation
+large-scale machine learning and deep learning mdoels are increasingly common. for instance, gpt-3 is trained
+on 570 gb of text and consists of 175 billion parameters. however, whilst training large models help 
+improve state-of-the-art performance, deploying such cumbersome models especially on edge deveices is not 
+straightforward.
+
+additionally, the majority of data science modeling work focuses on training a single large model or an 
+ensemble of different models to perform well on a hold-out validation set which is often not representative 
+of the real-world data.
+
+this discord between training and test objectives leads to the development of machine learning models that 
+yield good accuracy on curated validation datasets but often fail to meet performance, latency, and 
+throughput benchmarks at the time of inference on real-world test data.
+
+knowledge distillation helps overcome these challenges by capturing and "distilling" the knowledge in a 
+complex machine leanring model or an ensemble of models into a smaller single model that is much easier to
+deploy without significant loss in performance.
+
+in this blog, i will:
+describe knowledge distillation in details, its underlying principle, training schemes, and algorithms;
+dive deeper into applications of knowledge distillation in deep learning for images, text, and audio.
+
+what is knowledge distillation?
+knowledge distillation refers to the process of transferring the knowledge from a large unwieldy model or
+set of models to a single smaller model that can be practically deployed under real-world constraints.
+essentially, it is a form of model compression that was first successfully demonstrated by bucilua and
+collaborators in 2006.
+
+knowledge distillation is performed more commonly on neural network models asscociated with complex 
+architectures including several layers and model parameters. therefore, with the advent of deep learning
+in the last decade, and its success in diverse fields including speech recognition, image recognition, and
+natural language processing, knowledge distillation techniques have gained prominence for practical real-
+world applications.
+
+the challenge of deploying large deep neural network models is especially pertinent for edge devices with
+limited memory and computational capacity. to tackle this challenge, a model compression method was first
+proposed to transfer the knowledge from a large model into training a smaller model without any significant
+loss in performance. this process of learning a small model from a larger model was formalized as a "
+knowledge distillation" framework by hinton and colleagues.
+
+as shown in figure 1, in knowlegde distillation, a small "student" model learns to mimic a large "teacher"
+model and leverage the knowledge of the teacher to obtain similar or higher accuracy. in the next section, 
+i will delve deeper into the knowledge distillation framework and its underlying architecture and mechanisms.
+
+
+
+diving deeper into knowledge distillation:
+
+a knowledge distillation system consists of three principal components: the knowledge, the distillation 
+algorithm, and the teacher-student architecture.
+
+knowledge:
+in a neural network, knowledge typically refers to the learned weights and biases. at the same time, there
+is a rich diversity in the sources of knowledge in a large deep neural network. typical knowledge distillation
+uses the logits as the source of teacher knowledge, whilst others focus on the weights or activations of
+intermediate layers. other kinds of relevant knowledge include the relationship between different types of
+activations and neurons or the parameters of ...
+
+
+training:
+there are three principal types of methods for training student and teacher models, namely offline, online
+and self distillation. the categorization of the distillation training methods depends on whether
+the teacher model is modified at the same time as the student model or not,
+
+1. offline distillation:
+offline distillation is the most common method, where a pre-trained teacher model is used to guide the
+student model. in this scheme, the teacher model is first pre-trained on a training dataset, and the 
+knowledge from the teacher model is distilled to train the student model. given the recent advances in 
+deep learning, a wide variety of pre-trained neural network models are openly available that can serve as
+the teacher depending on the use case. offline distillation is an established technique in deep learning
+and easier to implement.
+
+2. online distillation
+in offline distillation, the pre-trained teacher model is usually a large capacity deep neural network. for
+several use cases, a pre-trained model may not be available for offline distillation. to address this
+limitation, online distillation can be used where both the teacher and student models are updated 
+simultaneously in a single end-to-end training process. online distillation can be operationalized using 
+parallel computing thus making it a highly efficient method.
+
+
 
