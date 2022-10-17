@@ -1,3 +1,4 @@
+https://arxiv.org/pdf/2012.12877.pdf
 Training data-efficient image transformers & distillation through attention;
 
 abstract:
@@ -66,4 +67,103 @@ a pre-trained, larger model (or }
 
 2. we introduce a new distillation procedure based on a distillation token, which plays the same role as the class
 token, except that it aims at reproducing the label estimated by the teacher. both tokens interact in the 
-transformer through attention.
+transformer through attention. this transformer-specific strategy outperforms vanilla distillation by a significant margin.
+
+3. interestingly, with our distillation, image transformers learn more from a convnet than from another transformer with
+comparable performance. {如果两个老师是：一个convnet 一个transformer 两个模型的分类能力相似，作者发现用convnet做老师，student model
+学到的效果更好}
+
+4. our models pre-learned on ImageNet are competitive when transferred to different downstream tasks such as fine-grained 
+classification, on several popular pulick benchmarks: cifar-10, cifar-100, ...
+
+this paper is organized as follows: we review related works in section 2, and focus on transformers for image classification in
+section 3. we introduce our distillation strategy for transformers in section 4. the experimental section 5 provides analysis 
+and comparisons against both convnets and recent transformers, as well as a comparative evaluation of our transformer-specific
+distillation. section 6 details our training scheme. it includes an extensive ablation of our data-efficient training choces, 
+which gives some insight on the key ingredients involved in deit. we conclude in section 7.
+
+related work:
+image classification is so core to computer vision that it is often used as a benchmark to measure progress in image understanding.
+any progress usually translates to improvement in other related tasks such as detection or segmentation. since 2012's alexnet, 
+convnets have dominated this benchmark and have become the de facto standard. the evolution of the state-of-the-art on the 
+ImageNet dataset reflects the progress with convolutional neural network arhictectures and learning.
+
+despite several attempts to use transformers for image classification, until now their performance has been inferior to that of
+convnets. nevertheless hybrid architectures that combine convnets and transformers, including the self-attention mechanism, have 
+recently exhibited competitive results in image classification, detection, video processing, unsupervised object discovery, and
+unified text-vision tasks.
+
+recently vision transformers (vit) closed the gap with the state of the art on imagenet, without using any convolution. this 
+performance is remarkable since convnet methods for image classification have benefited from years of tuning and optimization.
+nevertheless, according to this study, a pre-training phase on a large volume of curated data is required for the learned 
+transformer to be effective. in our paper we achieve a strong performance without requiring a large training dataset, i.e., with
+imagenet 1k only.
+
+{一些待解答问题：1.deit是offline distillation还是online distillation；2.什么被当作knowledge from teacher model，又是什么被当作
+knowledge接口 from student model，二者使用哪种loss function}
+
+the transformer architecture, introduced by vaswani et al. for machine translation are currently the reference model for all 
+natural language processing (nlp) tasks. many improvements of convnets for image classification are inspired by transformers.
+for example, squeeze and excitation, selective kernel and split-attention networks exploit mechanism akin to transformer
+self-attention mechanism.
+
+knowledge distillation (kd), introduced by hinton et al. refers to the training paradigm in which a student model leverages "soft"
+labels coming from a strong teacher network. this is the output vector of the teacher's softmax function rather than just
+the maximum of scores, which gives a "hard" label. such a training improves the performance of the student model (alternatively,
+it can be regarded as a form of compression of the teacher model into a smaller one - the student). on the one hand the teacher's
+soft labels will have a similar effect to labels smoothing. on the other hand as shown by wei et al. the teacher's supervision
+takes into account the effects of the data augmentation, 
+in our paper we study the distillation of a transformer student by either a convnet or a transformer teacher. we introduce a new
+distillation procedure specific to transformers and sho its superiority.
+
+3. vision transformer: overview
+in this section, we briefly recall preliminaries associated with the vision transformer, and further discuss positional encoding
+and resolution.
+
+multi-head self attention layers (msa). the attention mechanism is based on a trainable associative memory with (key, value) vector
+pairs. a query vector q is matched against a set of k key vectors (packed together into a matrix K in shape of kxd) using inner
+products. these inner products are then scaled and normalized with a softmax function to obtain k weights. the output of the 
+attention is the weighted sum of a set of k value vectors (packed into V in shape of kxd). for a sequence of N query vectors (packed
+into Q in shape of kxd), it produces an output matrix:
+
+attention(Q, K, V) = softmax(QK^T/sqrt(d))V,
+
+where the softmax function is applied over each row of the input matrix and the sqrt(d) term provides appropriate normalization.
+
+in 52, a self-attention layer is proposed. query, key and values matrices are themselves computed from a sequence of N input 
+vectors
+
+finally, multi-head self-attention layer (MSA) is defined by considering h attention heads, ie h self-attention functions applied
+to the input. each head provides a sequence of size nxd
+
+transformer block for images. to get a full transformer block as in 52, we add a feed-forward network (ffn) on top of the msa 
+layer. this ffn is composed of two linear layers separated by a gelu activation. the first linear layer expands the dimension 
+from d to 4d, and the second layer reduces the dimension from 4d back to d. if you have 256 patches and each patch is a d-dimension
+embedding vectors, each patch will pass through the ffn. both msa and ffn are operating as residual operators thank to 
+skip-connections, and with a layer normalization.
+
+in order to get a transformer to process images, our work builds upon the vit model. it is a simple and elegant architecture that
+processes input images as if they were a sequence of input tokens. the fixed-size input rgb image is decomposed into a batch of
+n patches of a fixed size of 16x16 pixels (N = 14x14). each patch is projected with a linear layer that conserves its overall
+dimension 3x16x16 = 768
+
+the transformer block described above is invariant to the order of the patch embeddings, and thus does not consider their relative
+position. the positional information is incorporated as fixed or trainable positional embeddings. they are added before the
+first transformer block to the patch tokens, which are then fed to the stack of transformer blocks.
+
+the class token is a trainable vector, appended to the patch tokens before the first layer, that goes through the transformer
+layers, and is then projected with a linear layer to predict the class. this class token is inherited from nlp, and departs
+from the typical pooling layers used in computer vision to predict teh class. the transformer thus process batches of (N+1) tokens
+of dimension D, of which only the class vector is used to predict the output. this architecture forces the self-attention to
+spread information between the patch tokens and the class tokens:
+
+fixing the positional encoding across resolutions.
+touvron et al show that it is desirable to use a lower training resolution and fine-tune the network at the larger resolution. 
+this speeds up the full training and improves the accuracy under prevailing data augmentation schemes. when increasing the 
+resolution of an input image, we keep the patch size the same, therefore the number N of input patches does change. due to the
+architecture of transformer blocks and the class token, the model and classifier do not need to be modified to process more
+tokens. in contrast, one needs to adapt the positional embeddings, because there are N of them, one for each patch. Dosovitskiy 
+et al [15] interpolate the positional encoding when changing the resolution and demonstrate that this method works with the 
+subsequent fine-tuning stage.
+
+
