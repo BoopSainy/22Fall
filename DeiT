@@ -167,3 +167,61 @@ et al [15] interpolate the positional encoding when changing the resolution and 
 subsequent fine-tuning stage.
 
 
+distillation through attention:
+in this section we assume we have access to a strong image classifier as a teacher model. it could be convnet, or a mixture
+of classifiers. we address the question of how to learn a transformer by exploiting this teacher. As we will see in section 5
+by comparing the trade-off between accuracy and image throughput, it can be beneficial to replace a convolutional neural 
+network by a transformer. this section covers two axes of distillation: hard distillation and versus soft distillation,
+and classical distillation versus the distillation token.
+{第一句话是说，假设我们可以access一个pre-trained cumbersome image classifier model。这个模型可以是convnet或是一个ensemble model;
+第四章将讨论两个知识点，第一个是对比soft distillation and hard distillation; 第二个是对比classical distillation and distillation 
+token}
+
+1. soft distillation minimizes the Kullback-Leibler divergence between the softmax of the teacher and the softmax of the student
+model. 
+
+let Z_t be the logits of the teacher model, Z_s the logits of the student model. We denote by \tau the temperature for the 
+distillation, \lambda the coefficient balancing the KL divergence loss and the cross-entropy on ground truth labels y, 
+and \psi the softmax function. the distillation objective is:
+
+L_global = (1 - \lambda) L_CE(\psi(Z_s), y) + \lambda * \tau^2 KL(\psi(Z_t/tau), \psi(Z_s/tau))
+
+2. hard-label distillation. We introduce a variant of distillation where we take the hard decision of the teacher {teacher
+model对输入的类别判断？一个one-hot vector或者是scalar类别标签} as a true label. Let y_t = argmax_c Z_t(c) be the hard decision
+of the teacher, the objective associated with this hard-label distillation is:
+
+L_global_hardDistllation = 1/2 L_CE(\psi(Z_s), y) + 1/2 L_CE(\psi(Z_s), y_t).
+
+For a given image, the hard label associated with the teacher may change depending on the specific data augmentation. 
+We will see that this choice is better than the traditional one, while being parameter-free and conceptually simpler:
+The teacher prediction y_t plays the same role as the true label y.
+
+Note also that the hard labels can also be converted into soft labels with label smoothing, where the true label is 
+considered to have a probability of 1-\epsilon, and the remaining \epsilon is shared across the remaining classes. we
+fix this parameter to \epsilon = 0.1 in our all experiments that use true labels.
+
+Distillation token. We now focus on our proposal, which is illustrated in figure 2. We add a new token, the distillation 
+token, to the initial embeddings (patches and class token). Our distillation token is used similarly as the class token:
+it interacts with other embeddings through self-attention, and is output by the network after the last layer. Its target
+objective is given by the distillation component of the the loss.  The distillation embedding allows our model to learn
+from the output of the teacher, as in a regular distillation, while remaining complementary to the class embedding.
+
+Figure 2: our distillation procedure: we simply include a new distillation token. it interacts with the class and patch 
+tokens through the self-attention layers. This distillation token is employed in a similar fashion as the class token, 
+except that on output of the network its objective is to reproduce the (hard) label predicted by the teacher, instead of
+true label. Both the class and distillation tokens input to the transformer input to the transformers are learned by
+back-propagation.
+
+interestingly, we observe that the learned class and distillation tokens converge towards different vectors: the 
+average cosine similarity between these tokens equal to 0.06...
+
+we verified that our distillation token adds something to the model, compared to simply adding an additional class token
+associated with the same target label: instead of a teacher pseudo-label, we experimented with a transfomre with two
+class tokens. even if we initialize them randomly and 
+
+{作者说他们的class token and distillation token最终会converge to different vectors, 因为class token's target is ground-truth
+label, distillation token's target is pseudo label of teacher model}
+
+
+fine-tuning with distillation.  we use both the true label and teacher prediction during the fine-tuning stage at higher
+resolution.
