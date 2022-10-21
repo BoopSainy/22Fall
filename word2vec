@@ -1,0 +1,34 @@
+https://arxiv.org/pdf/1411.2738.pdf
+
+https://zhuanlan.zhihu.com/p/35500923
+
+word2vect parameter learning explained:
+
+the word2vec model and application by mikolov have attracted a great amount of attention in recent two years.
+the vector representations of words learned by word2vec models have been shown to carry semantic meanings
+and are useful in various nlp tasks. as an increasing number of researchers would like to experiment with
+word2vec or similar techniques, i notice that there lacks a material that comprehensively explains the 
+parameter learning process of word embedding models in details, thus preventing researchers that are non-experts
+in neural networks from understanding the working mechanism of such models.
+this note provides detailed derivations and explanations of the parameter update equations of the word2vec
+models, including the original continuous bag-of-word (CBOW) and skip-gram(SG) models, as well as advanced
+optimization techniques. including hierarchical softmax and negative sampling. intuitive interpretations
+of the gradient equations are also provided alongside mathematical derivations.
+in the appendix, a review on the basics of neuron networks and backpropagation is provided. i also created
+an interactive demo, wevi, to facilitate the intuitive understanding of the model.
+
+background:
+in nlp domain, old algorithms choose to use one-hot vector to represent words; there are 2 problems resulted
+by the one-hot vector representations; the first one is, if we have tremendous number of words, the dimension
+of word vector would be extremely large; and the second one is, the distance between each pair of words would 
+be exactly same, if we try to use the distance between two word vectors to measure their semantic meaning, that
+is to say, if the distance is closer, these 2 words will be considered more similar; however, one-hot vector
+representation could not provide such kind of semantic information to words.
+
+advantages of word embedding:
+1) the word2vec model could map input words to a embedding space; therefore, the dimension of embedding vectors
+could be controlled in a reasonable range;
+2) the embedding vector will include simantic information for corresponding word; for, the distance between
+apple's and banana's embeeding will be more closer than apple's and building's
+
+zhihu: this paper will introudce the work mechanism of word2vec, 
