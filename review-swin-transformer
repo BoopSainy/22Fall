@@ -5,3 +5,15 @@ in images compared to words in text. to address these differences, we propose a 
 whose representation is computed with shifted windows. the shifted windowing scheme brings greater efficiency
 by limiting self-attention computation to non-overlapping local windows while also allowing for cross-window
 connection. this hierarchical architecture has the flexibility to model at various scales and 
+
+
+vision transformer:
+drawback:
+  vision transformer almost does not have the image-specific inductive bias like convolutional neural networks. For example, the vision
+transformer does not extract feature with locality. In cnn, we will do convolutional operation on pixels in a local region. And the vision 
+transformer does not maintain the two dimensional structure, after converting pixels groups to patches, these patches embedding vectors will 
+be flatten to 1 dimension. Even if vision transformer also bring some positional information by positional encoding vector, but the positional
+encoding vectors could only bring 1 dimensional positional information to the patches seqence.
+
+but if we only use attention operation locally in one windows, the features across different windows can not be exchanged and the swin
+transformer will lose the global modelling ability like vision transformer.
