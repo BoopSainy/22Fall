@@ -1,0 +1,32 @@
+abstract:
+
+neural net classifiers trained on data with annotated class labels can also capture apparent visual
+similarity among categories without being directed to do so. We study whether this observation 
+can be extended beyond the conventional domain of supervised learning: Can we learn a good feature
+representation that captures apparent similarity among instances, instead of classes, by merely asking
+the feature to be
+
+
+introduction:
+
+the rise of deep neural networks, especially convolutional neural networks, has led to several break-
+throughs in computer vision benchmarks. most successful models are traiend via supervised learning,
+which requires large datasets that are completely annotated for a specific task. however, obtaining
+annotated data is often very costly or even infeasible in certain cases. in recent years, unsupervised
+learning has received increasing attention from the community.
+
+our novel approach to unsupervised learning stems from a few observations on the results of supervised
+learning for object recognition. on imagenet, the top-5 classification error is significantly lower
+than the top-1 error, and the second highest responding class in the softmax output to an image is more
+likely to be visually related.
+（作者认为，对于传统的监督学习来说，通常top5准确率要远高于top1准确率；并且对于那些分类正确的样本，softmax分配
+给他们的第二高类别标签通常也是和这个图像在视觉上是相关的）
+our unsupervised approach takes the class-wise supervision to the extreme and learns a feature 
+representation that discriminates among individual instances.
+Fig.1 shows that an image from class leopard is rated much higher by class jaguar rather than by
+class bookcase. such observations reveal that a typical discriminative learning method can automatically
+discover apparent similarity among semantic categories, without being explicitly guided to do so. in other 
+words, apparent similarity is learned not from semantic annotations, but from the visual data themselves.
+
+we take the class-wise supervision to the extreme of instance-wise supervision, and ask: can we learn
+a meaningful metric that reflects aparent similarity among instances via 
