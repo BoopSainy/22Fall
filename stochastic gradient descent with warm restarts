@@ -1,0 +1,27 @@
+introduction:
+
+deep neural networks are currently the best-performning method for many classification problems,
+such as object recognition from images or speech recognition from audio data. their training on
+large datasets (where dnns perform particularly well)
+
+
+3. Stochastic Gradient Descent with Warm Restarts (SGDR)
+The existing restart techniques can also be used for stochastic gradient descent if the 
+stochasticity is taken into account. since gradients and loss values can vary widely from one
+batch of the data to anothr, one should denoise the incoming information: 
+
+
+Within each restart period, the learning rate woule be subject to Eqn:
+
+eta = eta_min + 1/2(eta_max - eta_min)(1 + cos(T_cur * pi / T));
+where eta_max and eta_min refers to the range for learning rate in this restart period, and
+T refers to total epoch number within this restart peior and T_cur represents how many epochs
+have been performed since the last restart;
+
+in order to improve anytime performance, we suggest an option to start with an initially small 
+T and increase it by a factor of T_multi at every restart (see, e.g., Figure 1 for T0 = 1, T_multi=2
+and T0=10, T_multi=2). It might be of great interest to decrease eta_max and eta_min at every
+new restart. However, for the sake of simplicity, here, we keep eta_max_i and eta_min_i the same for
+every i restart to reduce the number of hyperparameters involved.
+
+since our simulated warm 
