@@ -30,3 +30,67 @@ words, apparent similarity is learned not from semantic annotations, but from th
 
 we take the class-wise supervision to the extreme of instance-wise supervision, and ask: can we learn
 a meaningful metric that reflects aparent similarity among instances via 
+
+we take the class-wise supervision to the extreme of instance-wise supervision, and ask: cam we learn
+a meaningful metric that reflects apparent similarity among instances via pure discriminative learning?
+“我们如果让每个个体自成一类，然后通过这种个体区分的训练方式，能否训练出一个映射函数，使得输入的个体图像被映射到一个
+高维空间，在这个空间中，相似的个体会离得近些，不相似的个体会离的远；
+an image is distictive in its own right, and each could differ significantly from other images in
+the same semantic category. ”即使是同一个语义类中的图像们也会有着较大的不同“
+if we learn to discriminate between individual instances, without any notion of semantic categories,
+we may end up with a representation that captures apparent similarity among instances, just like
+class-wise supervised learning still retrains apparent similarity among classes. this formulation of
+unsupervised learning as an instance-level discrimination is also technically appealing, as it could
+benefit from latest advances in discriminative supervised learning, e.g. on new network architectures.
+“在个体区分的学习过程中，模型能够捕捉到个体之间的相似性关系，就像类间区分时模型所捕捉到的类间相似性关系一样”
+
+however, we also face a major challenge, now that the number of "classes" is the size of the entire
+training set. for ImageNet, it would be 1.2-million instead of 1,000 classes. simply extending softmax
+to many more classes becomes infeasible. we tackle this challenge by approximating the full softmax 
+distribution with noise-contrastive estimation (NCE) [9], and by resorting to a proximal regularization
+method to stabilize the learning process.
+
+To evaluate the effectiveness of unsupervised learning, past works such as have relied on a linear
+classifier, e.g. support vector machine, to connect the learned feature to categories for 
+
+we advocate a non-parametric approach for bothing training and testing. we formulate instance-level
+discrimination as a metric learning problem, where distances (similarity) between instances are calculated
+directly from the features in a non-parametric way. that is, the features for each instance are stored
+in a discrete memory bank, rather than weights in a network. at the test time, we perform classification 
+using k-nearest neighbors (kNN) based on the learned metric ...
+“我们提倡将个体水平的区分任务转化成一个 metric learning任务，希望模型能够学习到一个映射函数，将输入的个体图像映射到一个
+高维空间里，然我们在对图像在这个高维空间的特征进行操作“
+
+- related works:
+there has been growing interest in unsupervised learning without human-provided labels. previous works
+mainly fall into two categories: 1) generative models and 2) self-supervised approaches.
+
+self-supervised learning: exploits internal structures of data and formulates predictive tasks to
+train a model. specifically, the model needs to predict either an omitted aspect or component of an 
+instance given the rest. to learn a representation of images, the tasks could be: predicting the context,
+counting the objects, filling in missing parts of an image, recovering colors from grayscale images,
+or even sovling a jigsaw puzzle. for videos, self-supervision strategies include: leveraging temporal
+continuity via tracking..
+whereas self-supervised learning may capture relations among parts or aspects of an instance, it is 
+unclear why a particular self supervision task should help semantic
+
+metric learning:
+every feature representation F includes a metric between instances x and y: d_F(x,y) = ||F(x)-F(y)||.
+Feature learning can thus also be views as a certain form of metric learning. there have been extensive 
+studies on metric learning. successful application metric learning can often result in competitive
+performance, e.g. on face recognition and person reidentification. in these tasks, the classes at
+the test time 
+
+our goal is to learn an embedding function v = f_theta(x) without supervision. f_theta is a deep neural
+network with parameters theta, mapping image x to feature v. this embedding would induces a metric
+over the image space, as d_theta(x,y) = ||f_theta(x) - f_theta(y)|| for instances x and y. a 
+good embedding should 
+
+
+- non-parametric classifier:
+the problkem with the parametric softmax formuation is that the weight vector w serves as a class prototype,
+preventing explicit comparisons between instances;
+
+we propose a non-parametric 
+
+p(i|v_i) = exp(vv_i/tau)/sum{exp(vv_j/tau)}
